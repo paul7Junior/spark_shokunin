@@ -1,0 +1,12 @@
+version: "3.5"
+
+services:
+  vue:
+    image: node:lts-alpine
+    volumes: 
+      - /Users/paulhechinger/03data_mafia/spark_shokunin:/srv
+    ports:
+      - 8080:8080
+    tty: true 
+
+      

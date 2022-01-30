@@ -1,0 +1,10 @@
+version: "3.5"
+
+services:
+  spark:
+    image: spark_env2:latest
+    volumes: 
+      - /Users/paulhechinger/03data_mafia/spark_shokunin/spark_env:/srv/
+    tty: true 
+
+      
