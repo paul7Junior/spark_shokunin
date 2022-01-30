@@ -4,7 +4,7 @@ services:
   vue:
     image: node:lts-alpine
     volumes: 
-      - /Users/paulhechinger/03data_mafia/spark_shokunin:/srv
+      - /Users/paulhechinger/03data_mafia/spark_shokunin/vue_app:/srv/vue_app
     ports:
       - 8080:8080
     tty: true 
