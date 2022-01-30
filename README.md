@@ -4,6 +4,8 @@
 
 Front end of the app
 
+- installed ant-design CSS framework
+
 - Rendering through Markdown 
 - Cool code highligting
 
