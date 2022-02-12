@@ -15,4 +15,19 @@ Where we run the Spark/Scala code and generate the markdown outputs
 
 ## ElasticSearch
 
-Storage 
+- pulled elasticSearch image
+
+
+docker network create spark_shokunin_backend_network
+
+docker run --rm \
+--name elasticsearch \
+--net spark_shokunin_backend_network \
+-p 9200:9200 -p 9300:9300 \
+-e "discovery.type=single-node" \
+elasticsearch:7.16.3 \
+sh
+
+ 
+ docker run -d --name elasticsearch3 -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.16.3 bash
+
