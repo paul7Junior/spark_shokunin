@@ -1,0 +1,4 @@
+{
+    "image": "vue_app:latest",
+    "extensions": ["octref.vetur"]
+  }

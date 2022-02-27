@@ -12,7 +12,7 @@
         <ListExplorer/>
     </a-col>
     <a-col :span="8">
-      <Network/>
+      <Network />
     </a-col>
   </a-row>
 

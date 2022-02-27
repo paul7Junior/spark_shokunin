@@ -10,6 +10,7 @@
   "dependencies": {
     "ant-design-vue": "^2.2.8",
     "core-js": "^3.6.5",
+    "d3": "^7.3.0",
     "vue": "^3.0.0",
     "vue3-markdown-it": "^1.0.10"
   },

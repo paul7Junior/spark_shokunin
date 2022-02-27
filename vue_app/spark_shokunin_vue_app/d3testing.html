@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+
+<p>Second paragraph</p>
+
+ffff
+
+
+chart
+<body>
+
+<script>
+var data = {"name": "ROOT", "layer": "0", "current": "true", "children": [
+    {"name": "A-child", "warning": "true", "layer": "1", "children": [
+            {"name": "WHAT THE FUCK", "layer": "2"},
+            {"name": "A2kusi", "warning": "true","layer": "2", "children": [
+                    {"name": "A21", "warning": "true", "layer": "3"},
+                    {"name": "A2Dshhhhhhhd", "layer": "3", "children": [
+                            {"name": "A221", "layer": "4"},
+                            {"name": "A224", "layer": "4"},
+                            {"name": "A225", "layer": "4"}
+                        ]}
+                ]}
+        ]},
+    {"name": "BBBBBBBBB", "layer": "1"},
+    {"name": "Cggd", "layer": "1", "children": [
+            {"name": "C1", "layer": "2"},
+            {"name": "C2", "layer": "2", "children": [
+                    {"name": "C21", "layer": "3"},
+                    {"name": "C22", "layer": "3"}
+                ]}
+        ]}
+]};
+
+        d3.select("p").style("color", "green");
+
+        var root = d3.hierarchy(data);
+        console.log(root)
+
+        const descendants = root.descendants();
+        console.log(descendants)
+
+        var label = d => d.name
+
+        const L = descendants.map(d => label(d.data, d));
+        console.log(L)
+
+
+        var width = 1152
+
+        const dx = 100;
+        const dy = width / (root.height + 50);
+        //d3.tree().size([500, 500])(root);
+        d3.tree().nodeSize([20, 80])(root);
+
+
+        
+
+  console.log(root)
+
+  // Center the tree.
+  let x0 = Infinity;
+  let x1 = -x0;
+  root.each(d => {
+    if (d.x > x1) x1 = d.x;
+    if (d.x < x0) x0 = d.x;
+  });
+
+  var height = x1 - x0 + dx * 2;
+  var padding =50;
+  var stroke = "#555"
+  var strokeWidth = 1.5
+  var strokeOpacity = 0.4
+  var halo = "#fff"
+  var haloWidth = 3
+  var fill = "#999"
+  var r = 3
+
+
+
+
+        const svg = d3.select("body").append("svg")
+        .attr("viewBox", [-dy * padding / 2, x0 - dx, width, height])
+        // .attr("viewBox", [0, 0, 2000, 2000])
+                .attr("width", 1000)
+                .attr("height", 1000)
+                .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10);
+
+
+        const node = svg.append("g")
+                .selectAll("a")
+                .data(root.descendants())
+                .join("a")
+                // .attr("x", d => d.y_end)
+                // .attr("y", d => d.x)
+                .attr("transform", d => `translate(${d.y},${d.x})`)
+                // .attr("display", none)
+
+        var l = node.append("text")
+                .attr("dy", "-0.2em")
+                .attr("dx", "0.5em")
+                .attr("x", d => d.children ? -6 : 6)
+                .attr("text-anchor", d => "start")
+                .text((d, i) => L[i])
+                .call(text => text.clone(true))
+                .attr("fill", "none")
+                .attr("stroke", halo)
+                // .attr("display", none)
+                .attr("stroke-width", haloWidth);
+
+        
+                // node.append("circle")
+                // .attr("fill", d => d.children ? stroke : fill)
+                // .attr("r", r);
+
+        var ba = l.nodes().map(node => ({"id": node.__data__.data.name, "length": node.getComputedTextLength()}))
+        var ba2 = l.nodes().reduce((prev, cur) => ({...prev, [cur.__data__.data.name]: cur.getComputedTextLength() || 0}), {})
+        var ba3 = l.nodes().reduce((prev, cur, i) => ({...prev, [i]: cur.getComputedTextLength() || 0}), {})
+        var ttt = l.nodes().map(node => ({[node.__data__.data.name]: node.getComputedTextLength()}))
+        console.log(ttt)
+
+        var t = root.links().map(link=> ({"id": link.source.data.name}))
+
+        var b = l.nodes().map(node => node.getComputedTextLength())
+
+        const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+
+        root.descendants().map(item => item.y_start = item.y)
+        root.descendants().map(item => item.y_end = item.y + ba2[item.data.name])
+
+
+        root.descendants().map(x => {
+                if (x.children) {
+                        var diff = x.y_end - x.y_start
+                        x.children.map(child => {
+                                child.y_start = child.y_start + diff
+                                child.y_end = child.y_end + diff
+                        })
+        }
+        })
+
+
+        svg
+        .selectAll("a")
+        .data(root.descendants())
+        .join("a")
+        .attr("transform", d => `translate(${d.y_start},${d.x})`)
+
+        // node.append("text")
+        //         .attr("x", d => d.children ? -6 : 8)
+        //         .attr("y", 10)
+        //         .attr("text-anchor", d => "start")
+        //         .text((d, i) => L[i])
+        //         .attr("stroke", "#554488")
+        
+
+
+
+
+
+
+        console.log("root.descendants()")
+        console.log(root.descendants())
+
+        svg.append("g")
+                .attr("fill", "none")
+                .attr("stroke", stroke)
+                .attr("stroke-opacity", strokeOpacity)
+                .attr("stroke-linecap", null)
+                .attr("stroke-linejoin", null)
+                .attr("stroke-width", strokeWidth)
+                .selectAll("path")
+                .data(root.links())
+                .join("path")
+                .attr("d", d3.linkHorizontal()
+                .source(d => ({...d.source, 'type': 'source'}))
+                .target(d => ({...d.target, 'type': 'target'}))
+                .x(d => d.type === 'source'? d.y_end:d.y_start)
+                .y(d => d.x));
+
+        var h = root.descendants().map(x=>([[x.y_end,x.x], [x.y_start, x.x]]))
+
+        svg.append("g")
+        .attr("stroke", stroke)
+        .selectAll("path")
+                .data(h)
+                .join("path")
+                .attr("d", d3.line());
+
+      var chart = svg.node();
+
+</script>
+</body>
+</html>

@@ -2,11 +2,12 @@ version: "3.5"
 
 services:
   vue:
-    image: node:lts-alpine
+    image: vue_app:latest
     volumes: 
-      - /Users/paulhechinger/03data_mafia/spark_shokunin/vue_app:/srv/vue_app
+      - /Users/paulhechinger/03data_mafia/spark_shokunin/vue_app/spark_shokunin_vue_app:/app
     ports:
       - 8080:8080
+      - 3000:3000
     tty: true 
-
+    working_dir: /app
       
