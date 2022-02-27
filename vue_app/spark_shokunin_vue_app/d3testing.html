@@ -29,7 +29,7 @@ var data_right = {"name": "ROOT", "layer": "0", "current": "true", "children": [
         ]}
 ]};
 
-var data_left = {"name": "ROOT", "layer": "0", "current": "true", "children": [
+var data_left = {"name": "", "layer": "0", "current": "true", "children": [
     {"name": "A-child", "warning": "true", "layer": "1", "children": [
             {"name": "WHAT THE FUCK", "layer": "2"},
             {"name": "A2kusi", "warning": "true","layer": "2", "children": [
@@ -86,6 +86,7 @@ var height = 1000
 
 d3.select("body").append("svg")
 
+        
         drawTree(root_left, "left")
         drawTree(root, "right")
 
@@ -93,6 +94,8 @@ d3.select("body").append("svg")
         
         var SIDE_CONST = side === "right" ? 1 : -1
         var SIDE_CONST_TEXT_ANCHOR = side === "right" ? "start" : "end"
+        var NODE_CLASS = "node_" + side
+        
         const svg = d3.select("svg")//.append("svg")
         .attr("viewBox", [-500, -500, 1000, 1000])
                 .attr("width", 1000)
@@ -105,26 +108,23 @@ d3.select("body").append("svg")
 
         console.log(root.descendants())
         const node = svg.append("g").attr("class", "node_container")
-                .selectAll(".node")
+                .selectAll("." + NODE_CLASS)
                 .data(root.descendants())
                 .join("a")
-                .attr('class','node')
-                .attr("transform", d => side === "left" ? `translate(${d.y},${d.x})` : `translate(${d.y},${d.x})`)
-                // .join(enter => enter.append("a")
-                // .attr('class','node')
-                // .attr("transform", d => side === "left" ? `translate(${d.y},${d.x})` : `translate(${d.y},${d.x})`))
+                .attr('class', NODE_CLASS)
+                // .attr("transform", d => `translate(${d.y},${d.x})`)
 
         // Add text to nodes.
         var l = node.append("text")
                 .attr("dy", "-0.2em")
                 .attr("dx", "0.5em")
                 .attr("x", d => d.children ? -6 : 6)
-                .attr("text-anchor", d => "start")
+                .attr("text-anchor", d => SIDE_CONST_TEXT_ANCHOR)
                 .text((d, i) => labels[i])
-                .call(text => text.clone(true))
-                .attr("fill", "none")
-                .attr("stroke", halo)
-                .attr("stroke-width", haloWidth);
+                // .call(text => text.clone(true))
+                // // .attr("fill", "none")
+                // .attr("stroke", halo)
+                // .attr("stroke-width", haloWidth);
 
         // compute text length.
         var text_length = l.nodes().reduce((prev, cur) => ({...prev, [cur.__data__.data.name]: cur.getComputedTextLength() || 0}), {})
@@ -155,23 +155,13 @@ d3.select("body").append("svg")
         })
 
         // shift text to updated positions.
-        // svg
-        // .selectAll(".node")
-        // .data(root.descendants())
-        // .join(".node").attr("class", "")
-        // .attr("transform", d => side === "right" ? `translate(${d.y_start},${d.x})`: `translate(${d.y_end},${d.x})`)
-        // // .join(update => update
-        // // .attr("transform", d => side === "right" ? `translate(${d.y_start},${d.x})`: `translate(${d.y_start},${d.x})`))
-
-        svg
-        .selectAll(".node")
+        svg.selectAll("." + NODE_CLASS)
         .data(root.descendants())
-        // .join(".node").attr("class", "")
-        .attr("transform", d => `translate(${d.y_start},${d.x})`)
-        // .attr("transform", d => side === "right" ? `translate(${d.y_start},${d.x})`: `translate(${d.y_start},${d.x})`)
-
-
-
+        .join(enter => enter.append("circle"),
+                update => 
+                update.attr("transform", d => `translate(${d.y_start},${d.x})`)
+        )
+        
         // internode links with updated positions
         svg.append("g").attr("class", "link_container")
                 .attr("fill", "none")
