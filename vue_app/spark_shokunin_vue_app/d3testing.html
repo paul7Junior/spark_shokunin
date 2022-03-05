@@ -88,31 +88,20 @@ var height = 1000
         //d3.tree().size([500, -500])(root);
         d3.tree().nodeSize([20, 80])(root_right);
 
-
         var root_left = d3.hierarchy(data_left);
         d3.tree().nodeSize([20, -80])(root_left);
 
-
-        console.log(root_right.leaves())
-        console.log(root_right.leaves().map(x=>x.parent))
-
-
         var ii = 0
         function position_iter(items) {
-                if (ii === 5) undefined 
-                else {
-                        items.map(item => {
-                        if (item.parent !== null) {
-                                var a = item.parent.children.map(x=>x.x)
-                                var f = (Math.min(...a) + Math.max(...a))/2
-                                item.parent.x = f
-                        }
-                        })
-                        var t = items.map(x=>x.parent).filter(n=>n)
-                        if (t.length > 0) position_iter(t)        
-
-                ii = ii + 1       
+                items.map(item => {
+                if (item.parent !== null) {
+                        var x_array = item.parent.children.map(x=>x.x)
+                        var mid_position = (Math.min(...x_array) + Math.max(...x_array))/2
+                        item.parent.x = mid_position
                 }
+                })
+                var t = items.map(x=>x.parent).filter(n=>n)
+                if (t.length > 0) position_iter(t)        
         }
         
         // initialize leaves positions
