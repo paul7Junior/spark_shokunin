@@ -108,22 +108,41 @@ function compute_position(root) {
 }
 
 compute_position(root_right)
-console.log(root_right)
-console.log(root_right.descendants())
 compute_position(root_left)
 
-
-
-//   d3.select("body").append("svg").attr("style", "background-color:blue").attr("width",100)
-//                 .attr("height", 100)
-//                 .attr("transform", d => `translate(200, 200)`)
-
-
 d3.select("body").append("svg")
-
-        
+ 
 drawTree(root_left, "left")
 drawTree(root_right, "right")
+
+adjust_tree_x(root_right, 'right')
+adjust_tree_x(root_left, 'left')
+
+
+
+var temp = {"nodes": []}
+
+console.log(root_right.descendants())
+
+console.log(root_right.descendants().map((x,i)=>({'index':i, 'name': x.data.name})))
+
+var test1 = {"nodes": root_right.descendants().map((x,i)=>({index:i, name: x.data.name, x: x.x, y: x.y})), "links": []}
+console.log(test1)
+
+
+var chart = ForceGraph(test1, {
+  nodeId: d => d.index,
+  height: 600,
+})
+
+
+// var p = document.getElementsByTagName("svg")[0];
+// p.appendChild(chart)
+
+
+
+
+/////////////////////////// FUNCTIONS /////////////////////////////////////
 
 
 function adjust_tree_x(root, side) {
@@ -134,21 +153,8 @@ function adjust_tree_x(root, side) {
         d3.select("." + side + "_tree_container").attr("transform", d => adjustment)
 }
 
-// function adjust_tree_x(root, side) {
-//         var CONST_SIDE = side === "right" ? 1 : -1
-//         var shift = CONST_SIDE * root.x
-//         console.log(shift)
-//         var adjustment = `translate(0, ${shift})`
-//         d3.select(".node_container").attr("transform", d => adjustment)
-//         d3.select(".link_container").attr("transform", d => adjustment)
-//         d3.select(".underlined_path_container").attr("transform", d => adjustment)
 
-// }
-adjust_tree_x(root_right, 'right')
-adjust_tree_x(root_left, 'left')
-
-
-  function drawTree(root, side) {
+function drawTree(root, side) {
         
         var SIDE_CONST = side === "right" ? 1 : -1
         var SIDE_CONST_TEXT_ANCHOR = side === "right" ? "start" : "end"
@@ -254,10 +260,52 @@ adjust_tree_x(root_left, 'left')
   }
 
 
+function ForceGraph({nodes, links}, {nodeId = d => d.id, width = 640, height = 400} = {}) {
+        const N = d3.map(nodes, nodeId).map(intern);
+
+        function intern(value) {
+        return value !== null && typeof value === "object" ? value.valueOf() : value;
+        }
+
+        nodes = d3.map(nodes, (_, i) => ({id: N[i], x: 100+i*10, y: 100+i*10, vx: -0.001, vy: -0.001}));
+
+        const simulation = d3.forceSimulation(nodes)
+                .force("charge", d3.forceManyBody().strength(0))
+                .force("center",  d3.forceCenter(10, 10))
+                .on("tick", ticked)
+
+        const svg = d3
+                .select("svg")
+                // .attr("width", width)
+                // .attr("height", height)
+                // .attr("viewBox", [-width / 2, -height / 2, width, height])
+                .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+
+        const node = svg.append("g")
+                .attr("fill", "currentColor")
+                .attr("stroke", "#fff")
+                .attr("stroke-opacity", 1)
+                .attr("stroke-width", 1.5)
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("r", 5)
+
+        function ticked(i) {
+                this.force('charge').strength((1-this.alpha())*30)
+                
+                node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+        }
+
+        return Object.assign(svg.node(), {});
+}
 
 
-      let zoom = d3.zoom()
-	.on('zoom', handleZoom);
+
+let zoom = d3.zoom()
+.on('zoom', handleZoom);
 
 function handleZoom(e) {
 	d3.select('svg')
