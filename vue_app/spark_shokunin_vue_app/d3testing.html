@@ -82,16 +82,11 @@ var width = 1000
 var height = 1000
 
         var root_right = d3.hierarchy(data_right);
-
-        const dx = 100;
-        const dy = width / (root_right.height + 50);
-        //d3.tree().size([500, -500])(root);
         d3.tree().nodeSize([20, 80])(root_right);
 
         var root_left = d3.hierarchy(data_left);
         d3.tree().nodeSize([20, -80])(root_left);
 
-        var ii = 0
         function position_iter(items) {
                 items.map(item => {
                 if (item.parent !== null) {
@@ -104,13 +99,16 @@ var height = 1000
                 if (t.length > 0) position_iter(t)        
         }
         
-        // initialize leaves positions
-        root_right.leaves().map((item, i) => {
-        item.x = -100 + i * 15
-        })
-        // recursive start
-        position_iter(root_right.leaves())
+        function compute_position(root) {
+                root.leaves().map((item, i) => { // initialize leaves positions
+                item.x = -100 + i * 15
+                })
+                
+                position_iter(root.leaves()) // recursivity
+        }
 
+        compute_position(root_right)
+        compute_position(root_left)
 
 
 
