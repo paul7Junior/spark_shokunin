@@ -45,7 +45,7 @@ var data_left = {"name": "", "layer": "0", "current": "true", "children": [
             {"name": "A2kusi", "warning": "true","layer": "2", "children": [
                     {"name": "A21", "warning": "true", "layer": "3"},
                     {"name": "A2Dshhhhhhhd", "layer": "3", "children": [
-                            {"name": "A221", "layer": "4"},
+                            {"name": "Adddddd221", "layer": "4"},
                             {"name": "A224", "layer": "4"},
                             {"name": "A225", "layer": "4"}
                         ]}
@@ -54,7 +54,7 @@ var data_left = {"name": "", "layer": "0", "current": "true", "children": [
     {"name": "BBBBBBBBB", "layer": "1", "children": [
                             {"name": "JJJJJJ", "layer": "4"},
                             {"name": "AAAA", "layer": "4", "children": [
-                            {"name": "A221", "layer": "4"},
+                            {"name": "A22jkjkjk1", "layer": "4"},
                             {"name": "A224", "layer": "4"},
                             {"name": "A225", "layer": "4"}
                         ]},
@@ -81,34 +81,36 @@ var r = 3
 var width = 1000
 var height = 1000
 
-        var root_right = d3.hierarchy(data_right);
-        d3.tree().nodeSize([20, 80])(root_right);
+var root_right = d3.hierarchy(data_right);
+d3.tree().nodeSize([20, 80])(root_right);
 
-        var root_left = d3.hierarchy(data_left);
-        d3.tree().nodeSize([20, -80])(root_left);
+var root_left = d3.hierarchy(data_left);
+d3.tree().nodeSize([20, -80])(root_left);
 
-        function position_iter(items) {
-                items.map(item => {
-                if (item.parent !== null) {
-                        var x_array = item.parent.children.map(x=>x.x)
-                        var mid_position = (Math.min(...x_array) + Math.max(...x_array))/2
-                        item.parent.x = mid_position
-                }
-                })
-                var t = items.map(x=>x.parent).filter(n=>n)
-                if (t.length > 0) position_iter(t)        
+function position_iter(items) {
+        items.map(item => {
+        if (item.parent !== null) {
+                var x_array = item.parent.children.map(x=>x.x)
+                var mid_position = (Math.min(...x_array) + Math.max(...x_array))/2
+                item.parent.x = mid_position
         }
+        })
+        var t = items.map(x=>x.parent).filter(n=>n)
+        if (t.length > 0) position_iter(t)        
+}
+
+function compute_position(root) {
+        root.leaves().map((item, i) => { // initialize leaves positions
+        item.x = -100 + i * 15
+        })
         
-        function compute_position(root) {
-                root.leaves().map((item, i) => { // initialize leaves positions
-                item.x = -100 + i * 15
-                })
-                
-                position_iter(root.leaves()) // recursivity
-        }
+        position_iter(root.leaves()) // recursivity
+}
 
-        compute_position(root_right)
-        compute_position(root_left)
+compute_position(root_right)
+console.log(root_right)
+console.log(root_right.descendants())
+compute_position(root_left)
 
 
 
@@ -120,8 +122,39 @@ var height = 1000
 d3.select("body").append("svg")
 
         
-        drawTree(root_left, "left")
-        drawTree(root_right, "right")
+drawTree(root_left, "left")
+drawTree(root_right, "right")
+
+
+function adjust_tree_x(root, side) {
+        var CONST_SIDE = side === "right" ? -1 : -1
+        var shift = CONST_SIDE * root.x
+        console.log(shift)
+        var adjustment = `translate(0, ${shift})`
+        d3.select("." + side + "_tree_container").attr("transform", d => adjustment)
+}
+
+// function adjust_tree_x(root, side) {
+//         var CONST_SIDE = side === "right" ? 1 : -1
+//         var shift = CONST_SIDE * root.x
+//         console.log(shift)
+//         var adjustment = `translate(0, ${shift})`
+//         d3.select(".node_container").attr("transform", d => adjustment)
+//         d3.select(".link_container").attr("transform", d => adjustment)
+//         d3.select(".underlined_path_container").attr("transform", d => adjustment)
+
+// }
+adjust_tree_x(root_right, 'right')
+adjust_tree_x(root_left, 'left')
+
+d3.select("svg")
+.append("g")
+.append("circle")
+.attr("r", 2.5)
+.attr("fill", "red")
+// .attr("cx", 100)
+// .attr("cy", 0)
+.attr("transform", d => `translate(0, 11.875)`)
 
   function drawTree(root, side) {
         
@@ -141,25 +174,22 @@ d3.select("body").append("svg")
 
         // append nodes
 
-        console.log(root.descendants())
-        const node = svg.append("g").attr("class", "node_container")
+        var global_tree_container = svg.append("g").attr("class", "global_tree_container")
+
+        var side_container = global_tree_container.append("g").attr("class", side + "_tree_container")
+        console.log(side_container)
+
+        const node = side_container.append("g").attr("class", "node_container")
                 .selectAll("." + NODE_CLASS)
                 .data(root.descendants())
                 .join("a")
                 .attr('class', NODE_CLASS)
-                // .attr("transform", d => `translate(${d.y},${d.x})`)
 
         // Add text to nodes.
         var l = node.append("text")
                 .attr("dy", "-0.2em")
-                .attr("dx", "0.5em")
-                .attr("x", d => d.children ? -6 : 6)
                 .attr("text-anchor", d => SIDE_CONST_TEXT_ANCHOR)
                 .text((d, i) => labels[i])
-                // .call(text => text.clone(true))
-                // // .attr("fill", "none")
-                // .attr("stroke", halo)
-                // .attr("stroke-width", haloWidth);
 
         // compute text length.
         var text_length = l.nodes().reduce((prev, cur) => ({...prev, [cur.__data__.data.name]: cur.getComputedTextLength() || 0}), {})
@@ -190,7 +220,7 @@ d3.select("body").append("svg")
         })
 
         // shift text to updated positions.
-        svg.selectAll("." + NODE_CLASS)
+        side_container.selectAll("." + NODE_CLASS)
         .data(root.descendants())
         .join(enter => enter.append("circle"),
                 update => 
@@ -198,7 +228,7 @@ d3.select("body").append("svg")
         )
         
         // internode links with updated positions
-        svg.append("g").attr("class", "link_container")
+        side_container.append("g").attr("class", "link_container")
                 .attr("fill", "none")
                 .attr("stroke", stroke)
                 .attr("stroke-opacity", strokeOpacity)
@@ -218,7 +248,7 @@ d3.select("body").append("svg")
         //underlined text paths
         var text_underlined_path = root.descendants().map(x=>([[x.y_end,x.x], [x.y_start, x.x]]))
 
-        svg.append("g").attr("class", "underlined_path_container")
+        side_container.append("g").attr("class", "underlined_path_container")
         .attr("stroke", stroke)
         .attr("stroke-opacity", strokeOpacity)
         .attr("stroke-width", strokeWidth)
@@ -239,23 +269,14 @@ d3.select("body").append("svg")
 
 function handleZoom(e) {
 	d3.select('svg')
-        .selectAll('g')
-		.attr('transform', e.transform);
+        // .selectAll('g')
+        .selectAll('.global_tree_container')
+        // .selectAll('g')
+        .attr('transform', e.transform);
 }
 
 d3.select('svg')
   .call(zoom);
-
-
-//       console.log("root.descendants()")
-//         console.log(root.descendants())
-
-// const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-// var ba = l.nodes().map(node => ({"id": node.__data__.data.name, "length": node.getComputedTextLength()}))
-// var ba3 = l.nodes().reduce((prev, cur, i) => ({...prev, [i]: cur.getComputedTextLength() || 0}), {})
-// var ttt = l.nodes().map(node => ({[node.__data__.data.name]: node.getComputedTextLength()}))
-// var t = root.links().map(link=> ({"id": link.source.data.name}))
-// var b = l.nodes().map(node => node.getComputedTextLength())
 
 </script>
 </body>
