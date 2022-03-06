@@ -37,6 +37,7 @@ function ForceGraph({
   }
 
   nodes = d3.map(nodes, (_, i) => ({id: N[i], x: 100+i*10, y: 100+i*10, vx: -0.001, vy: -0.001}));
+  console.log(nodes)
 
   const simulation = d3.forceSimulation(nodes)
         .force("charge", d3.forceManyBody().strength(0))

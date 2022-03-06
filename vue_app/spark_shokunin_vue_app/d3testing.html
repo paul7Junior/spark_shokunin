@@ -111,7 +111,8 @@ compute_position(root_right)
 compute_position(root_left)
 
 d3.select("body").append("svg")
- 
+d3.select("svg").append("g").attr("class", "global_tree_container")
+
 drawTree(root_left, "left")
 drawTree(root_right, "right")
 
@@ -126,13 +127,31 @@ console.log(root_right.descendants())
 
 console.log(root_right.descendants().map((x,i)=>({'index':i, 'name': x.data.name})))
 
-var test1 = {"nodes": root_right.descendants().map((x,i)=>({index:i, name: x.data.name, x: x.x, y: x.y})), "links": []}
+
+
+var transformText = d3.select(".right_tree_container").attr("transform");
+console.log(transformText)
+// d3.transform(transformText).translate;  //returns [0,-25]
+
+
+console.log( d3.selectAll(".node_right").nodes())
+var e = d3.selectAll(".node_right").nodes().map(x=>x.transform.animVal[0].matrix.e)
+var test2 = d3.selectAll(".node_right").nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))
+// var res = d3.zip(e, f);
+
+var test1 = {"nodes": root_right.descendants().map((x,i)=>({index:i, name: x.data.name, x: x.y, y: x.x})), "links": []}
 console.log(test1)
 
+test2 = {'nodes': test2, 'links': []}
+console.log(test2)
 
-var chart = ForceGraph(test1, {
-  nodeId: d => d.index,
-  height: 600,
+
+console.log(d3.selectAll('.node_right'))
+console.log(d3.selectAll('.node_right').nodes().map(x=>x.attributes.transform.value))
+
+
+var chart = ForceGraph(test2, {
+  nodeId: d => d.index
 })
 
 
@@ -172,9 +191,7 @@ function drawTree(root, side) {
 
         // append nodes
 
-        var global_tree_container = svg.append("g").attr("class", "global_tree_container")
-
-        var side_container = global_tree_container.append("g").attr("class", side + "_tree_container")
+        var side_container = d3.select(".global_tree_container").append("g").attr("class", side + "_tree_container")
         console.log(side_container)
 
         const node = side_container.append("g").attr("class", "node_container")
@@ -260,28 +277,20 @@ function drawTree(root, side) {
   }
 
 
-function ForceGraph({nodes, links}, {nodeId = d => d.id, width = 640, height = 400} = {}) {
-        const N = d3.map(nodes, nodeId).map(intern);
+function ForceGraph({nodes, links}, {nodeId = d => d.id} = {}) {
 
-        function intern(value) {
-        return value !== null && typeof value === "object" ? value.valueOf() : value;
-        }
-
-        nodes = d3.map(nodes, (_, i) => ({id: N[i], x: 100+i*10, y: 100+i*10, vx: -0.001, vy: -0.001}));
-
-        const simulation = d3.forceSimulation(nodes)
+        const simulation = d3.forceSimulation()
+                .nodes(nodes)
                 .force("charge", d3.forceManyBody().strength(0))
-                .force("center",  d3.forceCenter(10, 10))
+                .force("center", d3.forceCenter(0, 0).strength(0))
                 .on("tick", ticked)
 
         const svg = d3
                 .select("svg")
-                // .attr("width", width)
-                // .attr("height", height)
-                // .attr("viewBox", [-width / 2, -height / 2, width, height])
-                .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+                // .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
 
         const node = svg.append("g")
+                .attr("class", "force_node")
                 .attr("fill", "currentColor")
                 .attr("stroke", "#fff")
                 .attr("stroke-opacity", 1)
@@ -292,10 +301,12 @@ function ForceGraph({nodes, links}, {nodeId = d => d.id, width = 640, height = 4
                 .attr("r", 5)
 
         function ticked(i) {
-                this.force('charge').strength((1-this.alpha())*30)
+                this.force('charge').strength((1-this.alpha())*0)
+                this.force('center').strength((1-this.alpha())*0)
                 
+
                 node
-                .attr("cx", d => d.x)
+                .attr("cx", d => {return(d.x)})
                 .attr("cy", d => d.y)
         }
 
