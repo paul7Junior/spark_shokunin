@@ -3,9 +3,14 @@
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+
+    
 </head>
 <body>
 
+<button onclick="myFunction1()" type="button">Click Me1</button>
+
+        
 <script>
 var data_right = {"name": "ROOT", "layer": "0", "current": "true", "children": [
     {"name": "A-child", "warning": "true", "layer": "1", "children": [
@@ -70,6 +75,7 @@ var data_left = {"name": "", "layer": "0", "current": "true", "children": [
 ]};
 
 
+
 var padding =50;
 var stroke = "#555"
 var strokeWidth = 1.5
@@ -120,41 +126,37 @@ adjust_tree_x(root_right, 'right')
 adjust_tree_x(root_left, 'left')
 
 
+function get_nodes_absolute_position() {
+        var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f})))        
 
-var temp = {"nodes": []}
+        var zoom_contrib = d3.selectAll(".global_tree_container").nodes().map(x=>({x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))        
 
-console.log(root_right.descendants())
+        console.log(d3.selectAll(".global_tree_container").nodes())
+        console.log(zoom_contrib)
+        individual_contrib = individual_contrib.flat().map(v=>({...v, x: v.x + zoom_contrib[0].x, y: v.y + zoom_contrib[0].y}))
 
-console.log(root_right.descendants().map((x,i)=>({'index':i, 'name': x.data.name})))
-
-
-
-var transformText = d3.select(".right_tree_container").attr("transform");
-console.log(transformText)
-// d3.transform(transformText).translate;  //returns [0,-25]
-
-
-console.log( d3.selectAll(".node_right").nodes())
-var e = d3.selectAll(".node_right").nodes().map(x=>x.transform.animVal[0].matrix.e)
-var test2 = d3.selectAll(".node_right").nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))
-// var res = d3.zip(e, f);
-
-var test1 = {"nodes": root_right.descendants().map((x,i)=>({index:i, name: x.data.name, x: x.y, y: x.x})), "links": []}
-console.log(test1)
-
-test2 = {'nodes': test2, 'links': []}
-console.log(test2)
+        positions = {'nodes': individual_contrib, 'links': []}
+        console.log(individual_contrib)
 
 
-console.log(d3.selectAll('.node_right'))
-console.log(d3.selectAll('.node_right').nodes().map(x=>x.attributes.transform.value))
+        console.log(d3.select('.global_tree_container'))
+        return positions
+}
+
+// var test2 = d3.selectAll(".node_right").nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))
+// test2 = {'nodes': test2, 'links': []}
+// console.log(test2)
+
+// var chart = ForceGraph(test2)
+
+function myFunction1() {
+        var positions = get_nodes_absolute_position()
+        console.log(positions)
+
+var chart = ForceGraph(positions)
 
 
-var chart = ForceGraph(test2, {
-  nodeId: d => d.index
-})
-
-
+}
 // var p = document.getElementsByTagName("svg")[0];
 // p.appendChild(chart)
 
@@ -277,7 +279,7 @@ function drawTree(root, side) {
   }
 
 
-function ForceGraph({nodes, links}, {nodeId = d => d.id} = {}) {
+function ForceGraph({nodes, links}) {
 
         const simulation = d3.forceSimulation()
                 .nodes(nodes)
@@ -287,7 +289,6 @@ function ForceGraph({nodes, links}, {nodeId = d => d.id} = {}) {
 
         const svg = d3
                 .select("svg")
-                // .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
 
         const node = svg.append("g")
                 .attr("class", "force_node")
@@ -304,7 +305,6 @@ function ForceGraph({nodes, links}, {nodeId = d => d.id} = {}) {
                 this.force('charge').strength((1-this.alpha())*0)
                 this.force('center').strength((1-this.alpha())*0)
                 
-
                 node
                 .attr("cx", d => {return(d.x)})
                 .attr("cy", d => d.y)
