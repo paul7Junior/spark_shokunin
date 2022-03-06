@@ -128,40 +128,20 @@ adjust_tree_x(root_left, 'left')
 
 function get_nodes_absolute_position() {
         var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f})))        
-
-        var zoom_contrib = d3.selectAll(".global_tree_container").nodes().map(x=>({x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))        
-
-        console.log(d3.selectAll(".global_tree_container").nodes())
-        console.log(zoom_contrib)
-        individual_contrib = individual_contrib.flat().map(v=>({...v, x: v.x + zoom_contrib[0].x, y: v.y + zoom_contrib[0].y}))
-
+        individual_contrib = individual_contrib.flat()
+        if (d3.selectAll(".global_tree_container").nodes()[0].transform.animVal.length !== 0) {
+                var zoom_contrib = d3.selectAll(".global_tree_container").nodes().map(x=>({x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))    
+                individual_contrib = individual_contrib.map(v=>({...v, x: v.x + zoom_contrib[0].x, y: v.y + zoom_contrib[0].y}))
+        }
         positions = {'nodes': individual_contrib, 'links': []}
-        console.log(individual_contrib)
-
-
-        console.log(d3.select('.global_tree_container'))
         return positions
 }
 
-// var test2 = d3.selectAll(".node_right").nodes().map(x=>({name:x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f}))
-// test2 = {'nodes': test2, 'links': []}
-// console.log(test2)
-
-// var chart = ForceGraph(test2)
 
 function myFunction1() {
         var positions = get_nodes_absolute_position()
-        console.log(positions)
-
-var chart = ForceGraph(positions)
-
-
+        var chart = ForceGraph(positions)
 }
-// var p = document.getElementsByTagName("svg")[0];
-// p.appendChild(chart)
-
-
-
 
 /////////////////////////// FUNCTIONS /////////////////////////////////////
 
@@ -302,8 +282,8 @@ function ForceGraph({nodes, links}) {
                 .attr("r", 5)
 
         function ticked(i) {
-                this.force('charge').strength((1-this.alpha())*0)
-                this.force('center').strength((1-this.alpha())*0)
+                this.force('charge').strength((1-this.alpha())*-4)
+                // this.force('center').strength((1-this.alpha())*0.1)
                 
                 node
                 .attr("cx", d => {return(d.x)})
