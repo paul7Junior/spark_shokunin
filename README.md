@@ -31,3 +31,17 @@ sh
  
  docker run -d --name elasticsearch3 -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.16.3 bash
 
+
+ROADMAP
+
+12 march 2022
+
+- building a scala REST API app.
+- being able to use elasticsearch to push data with the app 
+- being able to pull data from elasticsearch with the rest API.
+
+
+
+What is spark shokunin?. 
+
+A methodical way to think about data processing. Classification, categories.

@@ -263,8 +263,9 @@ function ForceGraph({nodes, links}) {
 
         const simulation = d3.forceSimulation()
                 .nodes(nodes)
-                .force("charge", d3.forceManyBody().strength(0))
+                // .force("charge", d3.forceManyBody().strength(0))
                 .force("center", d3.forceCenter(0, 0).strength(0))
+                .force("collide",  d3.forceCollide(30).strength(0.2))
                 .on("tick", ticked)
 
         const svg = d3
@@ -282,7 +283,7 @@ function ForceGraph({nodes, links}) {
                 .attr("r", 5)
 
         function ticked(i) {
-                this.force('charge').strength((1-this.alpha())*-4)
+                // this.force('charge').strength((1-this.alpha())*-4)
                 // this.force('center').strength((1-this.alpha())*0.1)
                 
                 node
