@@ -1,0 +1,42 @@
+# rrre
+
+
+```{scalar}
+val a = 2
+a
+```
+
+
+```{scalar}
+print(a)
+```
+
+
+```{spark}
+val a = 2
+print(a)
+```
+
+
+```{spark}
+import org.apache.spark.sql.SparkSession
+
+```
+
+
+```{spark}
+
+print(SparkSession)
+
+```
+
+```{spark}
+val spark = SparkSession.builder.appName("Simple Application").getOrCreate()
+
+println(spark)
+
+```
+
+```{spark}
+spark
+```

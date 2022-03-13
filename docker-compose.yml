@@ -1,0 +1,29 @@
+version: "3.5"
+
+services:
+  elastic:
+    image: elasticsearch:7.16.3 
+    volumes: 
+      - /Users/paulhechinger/03data_mafia/spark_shokunin/elastic_env/data:/srv/elastic_env/data
+    environment:
+      - node.name=master-node
+      - node.master=true
+      - cluster.name=es-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "cluster.initial_master_nodes=master-node"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    networks:
+      - spark_shokunin_backend_network
+    tty: true 
+
+      
+networks:
+  spark_shokunin_backend_network:
+    driver: bridge
+
