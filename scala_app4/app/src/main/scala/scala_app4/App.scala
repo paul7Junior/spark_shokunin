@@ -53,7 +53,7 @@ object App {
   import com.sksamuel.elastic4s.ElasticDsl._
 
 
-    val client = ElasticClient(JavaClient(ElasticProperties("http://localhost:9200")))
+  val client = ElasticClient(JavaClient(ElasticProperties("http://localhost:9200")))
 
   // val client = ElasticClient(ElasticProperties("http://localhost:9200"))
 
@@ -93,6 +93,8 @@ object App {
   def main(args: Array[String]): Unit = {
 
     elastic_app()
+
+
   //   implicit val system = ActorSystem(Behaviors.empty, "my-system")
   //   // needed for the future flatMap/onComplete in the end
   //   implicit val executionContext = system.executionContext
@@ -163,10 +165,175 @@ object App {
 // }
 
 
-
-// import $ivy.`com.chuusai::shapeless:2.3.3`, shapeless._
-
 // import $ivy.`com.sksamuel.elastic4s::elastic4s-http:6.7.8`
 // import $ivy.`com.sksamuel.elastic4s::elastic4s-core:7.17.1`
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // TEST GITHUB API -----------------------------
+
+// import $ivy.`com.47deg::github4s:0.30.0`
+
+
+// import cats.effect.IO
+// import github4s.Github
+// import org.http4s.client.{Client, JavaNetClientBuilder}
+
+// val httpClient: Client[IO] = JavaNetClientBuilder[IO].create // You can use any http4s backend
+
+// val gh = Github[IO](httpClient, None)
+
+// val authorizeUrl = gh.auth.authorizeUrl(
+//   "c132344a3de06513c2d1",
+//   "http://localhost:8081/autorize_one",
+//   List("public_repo"))
+
+// authorizeUrl.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+
+
+// val getAccessToken = gh.auth.getAccessToken(
+//   "c132344a3de06513c2d1",
+//   "7791308fe850ef4b3d9ae52fbb9521419a3a4e48",
+//   "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",
+//   "http://localhost:8081/_oauth-callback",
+//   "status")
+// getAccessToken.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+
+
+// val getContents = gh.repos.getContents("47degrees", "github4s", "README.md", Some("s/main"))
+// getContents.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+// unsafeRunSync() 
+
+// val a = Github[IO](httpClient, Some("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")).users.get("paul7Junior")
+
+// a.unsafeRunSync().result.map(x=>println(x))
+
+
+// val a = Github[IO](httpClient, Some("ghp_zGGXDvA5nUy0SIwa15u4a0")).users.get("rafaparadela")
+
+// object ProgramEval {
+//     val u1 = a.exec[Eval, HttpResponse[String]]().value
+//  }
+
+// import cats.implicits._
+// import github4s.GithubResponses.GHResult
+
+// ProgramEval.u1 match {
+//   // Here the actual value of the request is returned, 
+//   // not the same as Future's onComplete, where the return type is Unit
+//   case Right(GHResult(result, status, headers)) => result.login
+//   case Left(e) => e.getMessage
+// }
+
+
+
+// val getContents = gh.repos.getContents("47degrees", "github4s", "README.md", Some("main"))
+// val a = getContents.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+
+// val a = getContents.unsafeRunSync().result
+
+// a.download_url
+
+
+
+// val getContents = gh.repos.getContents("paul7Junior", "spark_shokunin", "README.md", Some("4f39018"))
+// val a = getContents.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+// val a = getContents.flatMap(_.result match {
+//   case Left(e)  => IO.println(s"Something went wrong: ${e.getMessage}")
+//   case Right(r) => IO.println(r)
+// })
+
+
+import cats.effect.unsafe.implicits.global
+
+// val getContents = gh.repos.getContents("paul7Junior", "spark_shokunin", "README.md", Some("4f39018"))
+// val g = getContents.unsafeRunSync()
+
+// g.result.right.get.head.content
+
+
+// g.result
+// g.statusCodes
+// g.headers
+
+// val hh = g.result match {
+//   case Right(x) => x
+//   case Left(x)  => s"You passed me the String:"
+// }
+
+
+// val hh = g.result match {
+//   case Right(x) => x.as[NonEmptyList[github4s.domain.Content]]
+//   case Left(x)  => s"You passed me the String:"
+// }
+
+// val k = g.result.right.get.head.content.get.replaceAll("\\R", "")
+// //.replaceAll("\r\n", "")
+
+// import java.util.Base64
+// import java.nio.charset.StandardCharsets
+
+// val p = Base64.getDecoder().decode(k)
+// Base64.getDecoder().decode(p)
+
+// val decodedWithMime = java.util.Base64.getMimeDecoder.decode(k)
+// val convertedByteArray = decodedWithMime.map(_.toChar).mkString
+
+
+// new String(p, StandardCharsets.UTF_8)
+
+// g.result.right.get 
+
+// g.result.map(x=>x.head).map(x=>x.download_url)
+
+// List(b).as(NonEmptyList[github4s.domain.Content])
+
+// .unsafeRunSync()
+
+
+// a.unsafeRunSync().result.map(x=>println(x))
