@@ -31,8 +31,18 @@ sh
  
  docker run -d --name elasticsearch3 -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.16.3 bash
 
+## High Level process
 
-ROADMAP
+- User can edit a markdown file locally, 
+
+
+Data updated from Markdown file.
+Data updated directly on the UI.
+
+Putting data in the right format for display D3
+Putting data in the right format to create path field.
+
+# ROADMAP
 
 12 march 2022
 
@@ -45,3 +55,12 @@ ROADMAP
 What is spark shokunin?. 
 
 A methodical way to think about data processing. Classification, categories.
+
+# May 28th 2022
+
+Having an elastic instance running
+
+
+curl --cacert ca/ca.crt --user elastic:elastic_pass -X PUT "https://localhost:9200/my-index-00002?pretty"
+
+
