@@ -1,8 +1,8 @@
 <template>
+  <div class="search" ref="containerRefNetwork">
+    <n-affix :top="20" :trigger-top="0" :listen-to="() => containerRefNetwork" position="fixed" style="">
   <div class="network">
-
-
-<div id="my_dataviz"></div>
+<!-- <div id="my_dataviz"></div> -->
 <svg id="my_dataviz2"></svg>
 
   <svg
@@ -17,11 +17,16 @@
     </g>
   </svg>
 </div>
+</n-affix>
+  </div>
+
 </template>
 
 <script>
 import * as d3 from 'd3';
 import json from '@/assets/miserables.json'
+import { NAffix } from 'naive-ui'
+import { ref } from "vue";
 
 // const data = [99, 71, 78, 25, 36, 92];
 
@@ -41,6 +46,15 @@ export default {
       default: 270,
       type: Number,
     }
+  },
+  components: {
+    NAffix
+  },
+    setup() {
+    const containerRefNetwork = ref(null);
+    return {
+      containerRefNetwork
+    };
   },
   data() {
     return {

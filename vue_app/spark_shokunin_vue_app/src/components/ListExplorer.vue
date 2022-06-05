@@ -1,5 +1,4 @@
 <template>
-      <p>EXPLORER LIST</p>
       <Markdown :source="source" />
       <Markdown :source="source2" />
 
@@ -22,14 +21,25 @@ export default {
   },
   data() {
     return {
-      source: '# Hello World\n ```js\n console.log("Hello World! This is Python.")\n```',
+      // source: '# Hello World\n ```js\n console.log("Hello World! This is Python.")\n``` ',
+      source: '# Hello World\n  \ fffff \ ddusdusfhidsf ',
       source2: ''
+    }
+  },
+  methods: {
+    formatRawFromElastic(raw) {
+      var formatted = raw.data.map(x=>"# " + x.path.split("/").at(-1) + "\n" + x.content).join(' ')
+      // console.log(raw)
+      return formatted
     }
   },
   mounted () {
     axios
       .get('http://localhost:8082/elastic')
-      .then(response => {console.log(this.info = response); this.source2 = response.data.map(x=>x.content).join(' ')})
+      .then(response => {console.log(response); 
+      // this.source2 = response.data.map(x=>x.content).join(' ')
+      this.source2 = this.formatRawFromElastic(response)
+      })
   }
 }
 </script>
