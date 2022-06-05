@@ -1,11 +1,13 @@
 <template>
-  <a-anchor>
+  <!-- <a-anchor>
   <a-row justify="center">
     <a-col :span="20" style="margin-top:15px">
           <a-input size="large" placeholder="large size" />
     </a-col>
   </a-row>
   </a-anchor>
+
+
 
   <a-row justify="center">
     <a-col :span="8">
@@ -17,13 +19,25 @@
   </a-row>
 
   <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Yo Vue.js p"/>
+  <HelloWorld msg="Welcome to Yo Vue.js p"/> -->
 
-  <a-button type="primary">Primary Button</a-button>
-  <a-button>Default Button</a-button>
-  <a-button type="dashed">Dashed Button</a-button>
-  <a-button type="text">Text Button</a-button>
-  <a-button type="link">Link Button</a-button>
+<n-grid x-gap="12" :cols="1">
+      <n-gi>
+        <Search/>
+    </n-gi>
+</n-grid>
+
+<n-grid x-gap="12" :cols="2">
+      <n-gi>
+        <ListExplorer/>
+      </n-gi>
+      <n-gi>
+        <Network />
+      </n-gi>
+</n-grid>
+
+
+<HelloWorld msg="Welcome to Yo Vue.js p"/>
 
 </template>
 
@@ -31,13 +45,20 @@
 import HelloWorld from './components/HelloWorld.vue'
 import ListExplorer from './components/ListExplorer.vue'
 import Network from './components/Network.vue'
+import Search from './components/Search.vue'
+// import axios from 'axios';
+import { NAffix } from 'naive-ui'
+import { ref } from "vue";
+
 
 export default {
   name: 'App',
   components: {
     HelloWorld,
     ListExplorer,
-    Network
+    Search,
+    Network,
+    NAffix
   }
 }
 </script>

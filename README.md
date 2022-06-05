@@ -1,19 +1,30 @@
 # DATA SHOKUNIN
 
+- Front: Vue app
+- BackEnd Server: Akka
+
+
 ## Vue app
 
 Front end of the app
 
 - installed ant-design CSS framework
-
 - Rendering through Markdown 
 - Cool code highligting
+
+### Dev environment 
+
+Coding with vsc inside a devcontainer. See .devcontainer in vue_app. 
+
+
 
 ## Spark environment
 
 Where we run the Spark/Scala code and generate the markdown outputs
 
 ## ElasticSearch
+
+https://github.com/elastic/elasticsearch/blob/master/docs/reference/setup/install/docker/docker-compose.yml
 
 - pulled elasticSearch image
 
@@ -58,9 +69,15 @@ A methodical way to think about data processing. Classification, categories.
 
 # May 28th 2022
 
-Having an elastic instance running
-
-
+- Having an elastic instance running
+- Setup an Akka Server.
+- Worked on cors policy with Akka.
+- Managed to make a first request from the vue app to the akka backend app. ping/pong.
 curl --cacert ca/ca.crt --user elastic:elastic_pass -X PUT "https://localhost:9200/my-index-00002?pretty"
 
+# June 3rd 2022
+
+- Managed to get first md text from elasticSearch into vue app.
+
+# June 5th 2022
 

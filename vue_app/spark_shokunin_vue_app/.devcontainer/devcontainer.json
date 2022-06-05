@@ -1,4 +1,8 @@
 {
-    "image": "vue_app:latest",
-    "extensions": ["octref.vetur"]
+    "dockerComposeFile": "/Users/paulhechinger/03data_mafia/spark_shokunin/vue_app/docker-compose.yml",
+    "workspaceFolder": "/app",
+    "service": "vue",
+    // "image": "vue_app:latest",
+    "extensions": ["octref.vetur"],
+    "forwardPorts": [8080]
   }

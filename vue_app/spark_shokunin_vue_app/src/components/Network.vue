@@ -1,9 +1,6 @@
 <template>
   <div class="network">
-NETWORK
-  </div>
 
-  <!-- <div id="my_dataviz"></div> -->
 
 <div id="my_dataviz"></div>
 <svg id="my_dataviz2"></svg>
@@ -19,18 +16,7 @@ NETWORK
       />
     </g>
   </svg>
-  
-  <!-- <svg
-    class="line-chart"
-    :viewBox="viewBox"
-  >
-    <g transform="translate(0, 10)">
-      <path
-        class="line-chart__line"
-        :d="line"
-      />
-    </g>
-  </svg> -->
+</div>
 </template>
 
 <script>
@@ -91,20 +77,15 @@ export default {
   methods: {
     renderOnce() {
       console.log(`the component is now mounted.`)
-      console.log(json)
-      d3.select("#my_dataviz")
-      .append("svg")
-        .attr("width", 200)
-        .attr("height", 200)
-      .append("rect")
-              .attr("width", 200)
-        .attr("height", 200)
-        // .attr("transform",
-        //       "translate(0, 10)")
-        .attr("fill", "green");
 
-
-
+      // d3.select("#my_dataviz")
+      // .append("svg")
+      //   .attr("width", 200)
+      //   .attr("height", 200)
+      // .append("rect")
+      //         .attr("width", 200)
+      //   .attr("height", 200)
+      //   .attr("fill", "green");
 
 
 this.ForceGraph(json, {
