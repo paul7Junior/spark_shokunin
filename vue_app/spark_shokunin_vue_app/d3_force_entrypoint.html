@@ -6,7 +6,9 @@
     <button onclick="update(nodes)" type="button">transition</button>
     <button onclick="gg()" type="button">gg</button>
     <button onclick="shrinkIt(clickedItem)" type="button">shrink it</button>
+    <!-- <button onclick="update(getDataInvolved(nodes), 'down')" type="button">update2</button> -->
 
+    
     
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
@@ -157,26 +159,10 @@
         drawTree(root_left, "left")
         drawTree(root_right, "right")
 
-        // adjust_tree_x(root_right, 'right')
-        // adjust_tree_x(root_left, 'left')
-
-
-
-        // function get_nodes_absolute_position() {
-        //     var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x => ({ name: x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f })))
-        //     individual_contrib = individual_contrib.flat()
-        //     if (d3.selectAll(".global_tree_container").nodes()[0].transform.animVal.length !== 0) {
-        //         var zoom_contrib = d3.selectAll(".global_tree_container").nodes().map(x => ({ x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f }))
-        //         individual_contrib = individual_contrib.map(v => ({ ...v, x: v.x + zoom_contrib[0].x, y: v.y + zoom_contrib[0].y, lastx: v.x + zoom_contrib[0].x, lasty: v.y + zoom_contrib[0].y }))
-        //     }
-        //     positions = { 'nodes': individual_contrib, 'links': [] }
-        //     return positions
-        // }
-
         function get_nodes_absolute_position() {
-            console.log("d3.selectAll")
+            console.log("£££")
             console.log(d3.selectAll(".node_right").nodes())
-            var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(node => ({ name: node.textContent, x: node.__data__.y, y: node.__data__.x, lastx: node.__data__.x, lasty: node.__data__.y })))
+            var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(node => ({ name: node.__data__.data.name, x: node.__data__.y, y: node.__data__.x, lastx: node.__data__.x, lasty: node.__data__.y })))
             individual_contrib = individual_contrib.flat()
 
             // var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x => ({ name: x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f })))
@@ -220,7 +206,9 @@
                     console.log(d.srcElement.__data__);
                     yourGlobalVariable = d.srcElement.__data__.name
                     clickedItem = d.srcElement.__data__
-                    update(nodes)
+                    var all = getDataInvolved(nodes)
+
+                    update(all, "up")
                     expandIt()
                 })
                 .attr("class", "force_node")
@@ -243,22 +231,44 @@
         }
 
 
-        function update(nodes, withTransition = false) {
+        function getDataInvolved(nodes) {
             var data = nodes.filter(item => item.name != yourGlobalVariable)
 
             var positions = get_nodes_absolute_position()
+            console.log('positions')
+            console.log(positions)
             entryData = [...Array(positions.nodes.length).keys()].map(x => ({ "x": clickedItem.x, "y": clickedItem.y, "r": 10, "name": positions.nodes[x].name, "lastx": positions.nodes[x].x, "lasty": positions.nodes[x].y }))
 
             all = data.concat(entryData)
+            return all
+        }
+
+        function update(nodes, direction, withTransition = false) {
+
+            console.log('nodes update function')
+            console.log(nodes)
+            if (direction == "up") {
+                opacity = 0.5
+                radius = 5
+            } else {
+                opacity = 1
+                radius = 10
+            }
 
             var a = d3
-                .select(".onesvg")
+                .select(".onesvg").select(".force_node")
                 .selectAll("circle")
-                .data(
-                    all, function (d) { return d ? d.name : this.id; }
+
+                console.log('dom element circle')
+                console.log(a)
+
+                a.data(
+                    nodes, function (d) { return d ? d.name : this.id; }
                 )
                 .join(
                     enter => {
+                        console.log('enter')
+                        console.log(enter)
                         entered = enter
 
                         var op =  enter.append('circle')
@@ -280,10 +290,12 @@
                         return update.filter(n=>n)
                             .transition()
                             .duration(1000)
-                            .style('opacity', 0.5)
-                            .attr('r', 5);
+                            .style('opacity', opacity)
+                            .attr('r', radius);
                     },
                     exit => {
+                        console.log("exit")
+                        console.log(exit)
                         exit.remove()
                     }
                 )
@@ -297,7 +309,9 @@
                             .nodes(entryData)
                             .on("tick", ticked)
 
-            var d = entered.selectAll("circle").filter(x=>x)
+            var d = d3
+                .select(".onesvg .force_node")
+                .selectAll("circle.new")
 
             function ticked(i) {
                     d
@@ -308,34 +322,46 @@
 
         function shrinkIt(initialPosition) {
             var simulation = d3.forceSimulation()
-            // .alphaDecay(0.1)
-            // .velocityDecay(0.8)
                             .force("x", d3.forceX().x(initialPosition.x))
                             .force("y", d3.forceY().y(initialPosition.y))
-                            // .force("collide", d3.forceCollide().radius(d => 0))
                             .alphaMin(0.1)
                             .nodes(entryData)
-                            .on("tick", ticked)
+                            .on("tick.bar", ticked)
+                            .on("tick.foo", ticked2)
                             .on("end", ended)
                             
-
-            var d = entered.selectAll(".new")
+            var d = d3
+                .select(".onesvg .force_node")
+                .selectAll("circle.new")
 
             function ticked(i) {
-                console.log(simulation.alpha())
                     d
                     .attr("r", d => 10 - 10*(1 - simulation.alpha()))
                     // .attr("cy", d => d.y)
             }
 
+            var d2 = d3
+                .select(".onesvg").select(".force_node")
+                .selectAll("circle")
+
+
+            function ticked2(i) {
+                    d2
+                    .style('opacity', 0.5 + 0.5 * (1 - simulation.alpha()))
+                    .attr('r', 5 + 5 * (1 - simulation.alpha()));
+            }
+
+
+            var dnew = d3
+                .select(".onesvg .force_node")
+                .selectAll("circle.new")
+
+
+                console.log('dnew')
+                console.log(dnew)
+
             function ended(i) {
-                    d3
-                    .select(".force_node")
-                    .selectAll("circle")
-                    .transition()
-                    .duration(1000)
-                    .style('opacity', 1)
-                    .attr('r', 10);
+                dnew.remove()
             }
         }
 
