@@ -180,6 +180,8 @@
         var positions;
         var entryData;
         var all;
+        var expandSimulation;
+        var shrinkSimulation;
 
         let ids = [...Array(30).keys()].map(x => (Math.random() + 1).toString(36).substring(7))
         var nodes = [...Array(30).keys()].map(x => ({ "x": 0 + d3.randomNormal(10, 0.15)(), "y": 0 + d3.randomNormal(10, 0.15)(), "r": 10, "name": ids[x] }))
@@ -220,6 +222,7 @@
                 .data(nodes, function (d) { return d ? d.name : this.id; })
                 .join("circle")
                 .attr("r", 10)
+                .attr('class', 'base_node')
 
             function ticked(i) {
                 node
@@ -275,6 +278,7 @@
                             .attr("r", 10)
                             .attr('cx', clickedItem.x)
                             .attr('cy', clickedItem.y)
+                            .attr('stroke', 'black')
                             .attr('class', 'new')
 
                             if (withTransition) {
@@ -287,11 +291,12 @@
                             
                     },
                     update => {
-                        return update.filter(n=>n)
-                            .transition()
-                            .duration(1000)
-                            .style('opacity', opacity)
-                            .attr('r', radius);
+                        return update
+                        // .filter(n=>n)
+                        //     .transition()
+                        //     .duration(1000)
+                        //     .style('opacity', opacity)
+                        //     .attr('r', radius);
                     },
                     exit => {
                         console.log("exit")
@@ -303,11 +308,13 @@
 
 
         function expandIt() {
-            var simulation = d3.forceSimulation()
+            expandSimulation = d3.forceSimulation()
                             .force("x", d3.forceX().x(d=>d.lastx)) 
                             .force("y", d3.forceY().y(d=>d.lasty))
                             .nodes(entryData)
-                            .on("tick", ticked)
+                            .alphaMin(0.1)
+                            .on("tick.foo", ticked)
+                            .on("tick.bar", ticked2)
 
             var d = d3
                 .select(".onesvg .force_node")
@@ -318,10 +325,23 @@
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
             }
+
+            var d2 = d3
+                .select(".onesvg").select(".force_node")
+                .selectAll("circle.base_node")
+
+            function ticked2(i) {
+                    d2
+                    .style('opacity', 1 - 0.5 * (1 - expandSimulation.alpha()))
+                    .attr('r', 10 - 5 * (1 - expandSimulation.alpha()));
+
+                    console.log("1 - " + expandSimulation.alpha())
+            }
+
         }
 
         function shrinkIt(initialPosition) {
-            var simulation = d3.forceSimulation()
+            var shrinkSimulation = d3.forceSimulation()
                             .force("x", d3.forceX().x(initialPosition.x))
                             .force("y", d3.forceY().y(initialPosition.y))
                             .alphaMin(0.1)
@@ -330,38 +350,44 @@
                             .on("tick.foo", ticked2)
                             .on("end", ended)
                             
-            var d = d3
+            var toShrink = d3
                 .select(".onesvg .force_node")
                 .selectAll("circle.new")
+                
 
-            function ticked(i) {
-                    d
-                    .attr("r", d => 10 - 10*(1 - simulation.alpha()))
-                    // .attr("cy", d => d.y)
+            function ticked(i) { 
+                toShrink.attr("r", d => 10 - 10*(1 - shrinkSimulation.alpha())) 
+                toShrink
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
             }
 
             var d2 = d3
                 .select(".onesvg").select(".force_node")
-                .selectAll("circle")
+                .selectAll("circle.base_node")
 
+                console.log('d2')
+                console.log(d2)
+
+                d2.data(nodes, function (d) { return d ? d.name : this.id; })
+                .enter().append('circle')
+                .attr("r", 10)
+                .attr('cx', clickedItem.x)
+                .attr('cy', clickedItem.y)
+                .attr('class', 'base_node')
 
             function ticked2(i) {
                     d2
-                    .style('opacity', 0.5 + 0.5 * (1 - simulation.alpha()))
-                    .attr('r', 5 + 5 * (1 - simulation.alpha()));
+                    .style('opacity', 0.5 + 0.5 * (1 - shrinkSimulation.alpha()))
+                    .attr('r', 5 + 5 * (1 - shrinkSimulation.alpha()));
+
+                    console.log("2 - " + shrinkSimulation.alpha())
             }
 
-
-            var dnew = d3
-                .select(".onesvg .force_node")
-                .selectAll("circle.new")
-
-
-                console.log('dnew')
-                console.log(dnew)
-
             function ended(i) {
-                dnew.remove()
+                console.log("ENDED")
+                toShrink.remove()
+                // d2.style('opacity', 1).attr('r', 10)
             }
         }
 
