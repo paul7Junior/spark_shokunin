@@ -97,8 +97,12 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val nodesFormat: RootJsonFormat[Nodes] = jsonFormat1(Nodes)
 }
 
+case class Query(value: String)
+trait QueryJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
+  implicit val formats = jsonFormat1(Query)
+}
 
-class MyJsonService extends Directives with JsonSupport {
+class MyJsonService extends Directives with JsonSupport with QueryJsonSupport {
 
     implicit object NodeHitReader extends HitReader[Node] {
     override def read(hit: Hit): Try[Node] = {
@@ -110,15 +114,26 @@ class MyJsonService extends Directives with JsonSupport {
     val route = 
         handleErrors {
             cors(settings) {
-            path("elastic") {
-                complete {
-                
+            path("search") { 
+              entity(as[Query]) { query =>
+                                  complete {
                 val resp = client.execute {
-                    search("node").query("spark")
+                    search("node").query(query.value)
                 }.await
 
                 val nodeArray = resp.result.to[Node]
 
+                nodeArray
+            }
+                // complete(s"Query Value: ${query.value}")
+            }
+            } ~
+            path("elastic") {
+                complete {
+                val resp = client.execute {
+                    search("node").query("spark")
+                }.await
+                val nodeArray = resp.result.to[Node]
                 nodeArray
             }
             } ~
@@ -127,9 +142,7 @@ class MyJsonService extends Directives with JsonSupport {
                 val resp = client.execute {
                     search("node").query(queryText)
                 }.await
-
                 val nodeArray = resp.result.to[Node]
-
                 nodeArray
             }
             }
@@ -148,18 +161,50 @@ bindingFuture.flatMap(_.unbind()).onComplete(_ => system.terminate())
 
 
 
+import akka.http.scaladsl.client.RequestBuilding.Post
+val response = Post("http://localhost:8082/elastic", "data")
+
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json.DefaultJsonProtocol._
+import scala.concurrent.Future
+
 
 val route = 
     handleErrors {
-        // cors(settings) {
+        cors(settings) {
+        path("mypath") { 
+              entity(as[Person]) { person =>
+                complete(s"Person: ${person.name} - favorite number: ${person.favoriteNumber}")
+            }
+        } ~
         path("ping") {
         complete("pong")
         } ~
         path("pong") {
         failWith(new NoSuchElementException("pong not found, try with ping"))
         } 
-    // }
+     }
     }
+
+implicit val system = ActorSystem(Behaviors.empty, "my-system")
+implicit val executionContext = system.executionContext
+val bindingFuture = Http().newServerAt("localhost", 8082).bind(route)
+
+bindingFuture.flatMap(_.unbind()).onComplete(_ => system.terminate())
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

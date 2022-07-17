@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../playground_shokunin/scala_app5/app/src/main/scala/scala_app5"
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"files.watcherExclude": {
+			"**/target": true
+		}
+	}
+}

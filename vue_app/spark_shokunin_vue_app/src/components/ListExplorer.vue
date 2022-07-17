@@ -1,6 +1,6 @@
 <template>
       <Markdown :source="source" />
-      <Markdown :source="source2" />
+      <Markdown :source="searchResult" />
 
 
 </template>
@@ -23,8 +23,21 @@ export default {
     return {
       // source: '# Hello World\n ```js\n console.log("Hello World! This is Python.")\n``` ',
       source: '# Hello World\n  \ fffff \ ddusdusfhidsf ',
-      source2: ''
+      // source2: ''
     }
+  },
+  computed: {
+    searchResult: {
+        get () {
+          console.log('get listexplorer')
+          if (this.$store.state.searchResult !== '')
+            return this.formatRawFromElastic(this.$store.state.searchResult)
+            else null
+        },
+        set (value) {
+          this.$store.commit('updateMessage', value)
+        }
+      }
   },
   methods: {
     formatRawFromElastic(raw) {
@@ -34,12 +47,22 @@ export default {
     }
   },
   mounted () {
-    axios
-      .get('http://localhost:8082/elastic')
-      .then(response => {console.log(response); 
-      // this.source2 = response.data.map(x=>x.content).join(' ')
-      this.source2 = this.formatRawFromElastic(response)
-      })
+    // axios
+    //   .get('http://localhost:8082/elastic')
+    //   .then(response => {console.log(response); 
+    //   // this.source2 = response.data.map(x=>x.content).join(' ')
+    //   this.source2 = this.formatRawFromElastic(response)
+    //   })
+
+    // axios
+    //   .post('http://localhost:8082/mypath',{
+    //         value: 'Fred'
+    //       })
+    //   .then(response => {console.log("FOLLOW THE FAT RABBIT")
+    //     console.log(response); 
+    //   })
+
+      
   }
 }
 </script>

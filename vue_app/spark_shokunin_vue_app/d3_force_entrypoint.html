@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <button onclick="ForceGraph(nodes)" type="button">Animation</button>
+    <button onclick="update(nodes)" type="button">transition</button>
+    <button onclick="gg()" type="button">gg</button>
+    <button onclick="shrinkIt(clickedItem)" type="button">shrink it</button>
+
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+
+<body>
+
+
+
+    <script>
+        var data_right = {
+            "name": "ROOT", "layer": "0", "current": "true", "children": [
+                {
+                    "name": "A-child", "warning": "true", "layer": "1", "children": [
+                        { "name": "WHAT THE FUCK", "layer": "2" },
+                        {
+                            "name": "A2kusi", "warning": "true", "layer": "2", "children": [
+                                { "name": "A21", "warning": "true", "layer": "3" },
+                                {
+                                    "name": "A2Dshhhhhhhd", "layer": "3", "children": [
+                                        { "name": "A221", "layer": "4" },
+                                        { "name": "A224", "layer": "4" },
+                                        { "name": "ffjjjjjj", "layer": "4" },
+                                        { "name": "hHHsddd", "layer": "4" },
+                                        { "name": "A225", "layer": "4" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "BBBBBBBBB", "layer": "1", "children": [
+                        { "name": "JJJJJJ", "layer": "4" },
+                        {
+                            "name": "AAAA", "layer": "4", "children": [
+                                { "name": "A221", "layer": "4" },
+                                { "name": "A224", "layer": "4" },
+                                { "name": "A225", "layer": "4" }
+                            ]
+                        },
+                        { "name": "NNNNNNNNNNNkkkkkkkkk", "layer": "4" }
+                    ]
+                },
+                {
+                    "name": "Cggd", "layer": "1", "children": [
+                        { "name": "C1", "layer": "2" },
+                        {
+                            "name": "C2", "layer": "2", "children": [
+                                { "name": "C21", "layer": "3" },
+                                { "name": "C22", "layer": "3" }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var data_left = {
+            "name": "", "layer": "0", "current": "true", "children": [
+                {
+                    "name": "A-child", "warning": "true", "layer": "1", "children": [
+                        { "name": "WHAT THE FUCK", "layer": "2" },
+                        {
+                            "name": "A2kusi", "warning": "true", "layer": "2", "children": [
+                                { "name": "A21", "warning": "true", "layer": "3" },
+                                {
+                                    "name": "A2Dshhhhhhhd", "layer": "3", "children": [
+                                        { "name": "Adddddd221", "layer": "4" },
+                                        { "name": "A224", "layer": "4" },
+                                        { "name": "A225", "layer": "4" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "BBBBBBBBB", "layer": "1", "children": [
+                        { "name": "JJJJJJ", "layer": "4" },
+                        {
+                            "name": "AAAA", "layer": "4", "children": [
+                                { "name": "A22jkjkjk1", "layer": "4" },
+                                { "name": "A224", "layer": "4" },
+                                { "name": "A225", "layer": "4" }
+                            ]
+                        },
+                        { "name": "NNNNNNNNNNNkkkkkkkkk", "layer": "4" }
+                    ]
+                },
+                {
+                    "name": "Cggd", "layer": "1", "children": [
+                        { "name": "C1", "layer": "2" },
+                        {
+                            "name": "C2", "layer": "2", "children": [
+                                { "name": "C21", "layer": "3" },
+                                { "name": "C22", "layer": "3" }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var padding = 50;
+        var stroke = "#555"
+        var strokeWidth = 1.5
+        var strokeOpacity = 0.4
+        var halo = "#fff"
+        var haloWidth = 3
+        var fill = "#999"
+        var r = 3
+        var width = 500
+        var height = 500
+
+        var root_right = d3.hierarchy(data_right);
+        d3.tree().nodeSize([20, 80])(root_right);
+
+        var root_left = d3.hierarchy(data_left);
+        d3.tree().nodeSize([20, -80])(root_left);
+
+        function position_iter(items) {
+            items.map(item => {
+                if (item.parent !== null) {
+                    var x_array = item.parent.children.map(x => x.x)
+                    var mid_position = (Math.min(...x_array) + Math.max(...x_array)) / 2
+                    item.parent.x = mid_position
+                }
+            })
+            var t = items.map(x => x.parent).filter(n => n)
+            if (t.length > 0) position_iter(t)
+        }
+
+        function compute_position(root) {
+            root.leaves().map((item, i) => { // initialize leaves positions
+                item.x = -100 + i * 15
+            })
+
+            position_iter(root.leaves()) // recursivity
+        }
+
+        compute_position(root_right)
+        compute_position(root_left)
+
+        setBaseSVG()
+
+        drawTree(root_left, "left")
+        drawTree(root_right, "right")
+
+        // adjust_tree_x(root_right, 'right')
+        // adjust_tree_x(root_left, 'left')
+
+
+
+        // function get_nodes_absolute_position() {
+        //     var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x => ({ name: x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f })))
+        //     individual_contrib = individual_contrib.flat()
+        //     if (d3.selectAll(".global_tree_container").nodes()[0].transform.animVal.length !== 0) {
+        //         var zoom_contrib = d3.selectAll(".global_tree_container").nodes().map(x => ({ x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f }))
+        //         individual_contrib = individual_contrib.map(v => ({ ...v, x: v.x + zoom_contrib[0].x, y: v.y + zoom_contrib[0].y, lastx: v.x + zoom_contrib[0].x, lasty: v.y + zoom_contrib[0].y }))
+        //     }
+        //     positions = { 'nodes': individual_contrib, 'links': [] }
+        //     return positions
+        // }
+
+        function get_nodes_absolute_position() {
+            console.log("d3.selectAll")
+            console.log(d3.selectAll(".node_right").nodes())
+            var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(node => ({ name: node.textContent, x: node.__data__.y, y: node.__data__.x, lastx: node.__data__.x, lasty: node.__data__.y })))
+            individual_contrib = individual_contrib.flat()
+
+            // var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(x => ({ name: x.textContent, x: x.transform.animVal[0].matrix.e, y: x.transform.animVal[0].matrix.f })))
+            // individual_contrib = individual_contrib.flat()
+
+            positions = { 'nodes': individual_contrib, 'links': [] }
+            console.log(positions)
+            return positions
+        }
+
+
+        var yourGlobalVariable;
+        var clickedItem;
+        var entered;
+        var positions;
+        var entryData;
+        var all;
+
+        let ids = [...Array(30).keys()].map(x => (Math.random() + 1).toString(36).substring(7))
+        var nodes = [...Array(30).keys()].map(x => ({ "x": 0 + d3.randomNormal(10, 0.15)(), "y": 0 + d3.randomNormal(10, 0.15)(), "r": 10, "name": ids[x] }))
+
+        function ForceGraph(nodes) {
+
+            console.log(ids)
+
+            const simulation = d3.forceSimulation()
+                .nodes(nodes)
+                // .force("charge", d3.forceManyBody().strength(0))
+                // .force("center", d3.forceCenter(0, 0).strength(0))
+                .force("collide", d3.forceCollide(41).strength(0.8))
+                .force("x", d3.forceX(0))
+                .force("y", d3.forceY(0))
+                .on("tick", ticked)
+
+            const svg = d3
+                .select("svg")
+                .attr("class", "onesvg")
+
+            const node = svg.append("g")
+                .on("click", function (d) {
+                    console.log(d.srcElement.__data__);
+                    yourGlobalVariable = d.srcElement.__data__.name
+                    clickedItem = d.srcElement.__data__
+                    update(nodes)
+                    expandIt()
+                })
+                .attr("class", "force_node")
+                .attr("fill", "currentColor")
+                .attr("stroke", "#fff")
+                .attr("stroke-opacity", 1)
+                .attr("stroke-width", 1.5)
+                .selectAll("circle")
+                .data(nodes, function (d) { return d ? d.name : this.id; })
+                .join("circle")
+                .attr("r", 10)
+
+            function ticked(i) {
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y)
+            }
+
+            // return Object.assign(svg.node(), {});
+        }
+
+
+        function update(nodes, withTransition = false) {
+            var data = nodes.filter(item => item.name != yourGlobalVariable)
+
+            var positions = get_nodes_absolute_position()
+            entryData = [...Array(positions.nodes.length).keys()].map(x => ({ "x": clickedItem.x, "y": clickedItem.y, "r": 10, "name": positions.nodes[x].name, "lastx": positions.nodes[x].x, "lasty": positions.nodes[x].y }))
+
+            all = data.concat(entryData)
+
+            var a = d3
+                .select(".onesvg")
+                .selectAll("circle")
+                .data(
+                    all, function (d) { return d ? d.name : this.id; }
+                )
+                .join(
+                    enter => {
+                        entered = enter
+
+                        var op =  enter.append('circle')
+                            .attr("r", 10)
+                            .attr('cx', clickedItem.x)
+                            .attr('cy', clickedItem.y)
+                            .attr('class', 'new')
+
+                            if (withTransition) {
+                                op = op.transition()
+                                .duration(1000)
+                                .attr('cx', d=> d.lastx)
+                                .attr('cy', d=> d.lasty)
+                            }
+                            return op
+                            
+                    },
+                    update => {
+                        return update.filter(n=>n)
+                            .transition()
+                            .duration(1000)
+                            .style('opacity', 0.5)
+                            .attr('r', 5);
+                    },
+                    exit => {
+                        exit.remove()
+                    }
+                )
+        }
+
+
+        function expandIt() {
+            var simulation = d3.forceSimulation()
+                            .force("x", d3.forceX().x(d=>d.lastx)) 
+                            .force("y", d3.forceY().y(d=>d.lasty))
+                            .nodes(entryData)
+                            .on("tick", ticked)
+
+            var d = entered.selectAll("circle").filter(x=>x)
+
+            function ticked(i) {
+                    d
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y)
+            }
+        }
+
+        function shrinkIt(initialPosition) {
+            var simulation = d3.forceSimulation()
+            // .alphaDecay(0.1)
+            // .velocityDecay(0.8)
+                            .force("x", d3.forceX().x(initialPosition.x))
+                            .force("y", d3.forceY().y(initialPosition.y))
+                            // .force("collide", d3.forceCollide().radius(d => 0))
+                            .alphaMin(0.1)
+                            .nodes(entryData)
+                            .on("tick", ticked)
+                            .on("end", ended)
+                            
+
+            var d = entered.selectAll(".new")
+
+            function ticked(i) {
+                console.log(simulation.alpha())
+                    d
+                    .attr("r", d => 10 - 10*(1 - simulation.alpha()))
+                    // .attr("cy", d => d.y)
+            }
+
+            function ended(i) {
+                    d3
+                    .select(".force_node")
+                    .selectAll("circle")
+                    .transition()
+                    .duration(1000)
+                    .style('opacity', 1)
+                    .attr('r', 10);
+            }
+        }
+
+
+        function setBaseSVG() {
+            d3.select("body").append("svg")
+            d3.select("svg").append("g").attr("class", "global_tree_container")
+            d3.select("svg")
+                .attr("viewBox", [-400, -400, 800, 800])
+                .attr("width", 500)
+                .attr("height", 500)
+                .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10);
+        }
+
+
+
+
+
+
+
+
+
+        // myFunction1()
+
+        /////////////////////////// FUNCTIONS /////////////////////////////////////
+
+
+        function adjust_tree_x(root, side) {
+            var CONST_SIDE = side === "right" ? -1 : -1
+            var shift = CONST_SIDE * root.x
+            console.log(shift)
+            var adjustment = `translate(0, ${shift})`
+            d3.select("." + side + "_tree_container").attr("transform", d => adjustment)
+        }
+
+        function drawTree(root, side) {
+
+            var SIDE_CONST = side === "right" ? 1 : -1
+            var SIDE_CONST_TEXT_ANCHOR = side === "right" ? "start" : "end"
+            var NODE_CLASS = "node_" + side
+
+            const labels = root.descendants().map(d => d.data.name);
+
+            // const svg = getBaseSVG()
+
+            var side_container = d3.select(".global_tree_container").append("g").attr("class", side + "_tree_container")
+            console.log(side_container)
+
+            const node = side_container.append("g").attr("class", "node_container")
+                .selectAll("." + NODE_CLASS)
+                .data(root.descendants())
+                .join("a")
+                .attr('class', NODE_CLASS)
+
+
+
+            // // Add text to nodes.
+            // var l = node.append("text")
+            //     .attr("dy", "-0.2em")
+            //     .attr("text-anchor", d => SIDE_CONST_TEXT_ANCHOR)
+            //     .text((d, i) => labels[i])
+
+            // // compute text length.
+            // var text_length = l.nodes().reduce((prev, cur) => ({ ...prev, [cur.__data__.data.name]: cur.getComputedTextLength() || 0 }), {})
+
+            // // set position y_start and y_end of each node.
+            // root.descendants().map(item => {
+            //     item.y_start = item.y
+            //     item.y_end = item.y + SIDE_CONST * text_length[item.data.name]
+            //     item.abs_length = Math.abs(text_length[item.data.name])
+            // })
+
+            // // if one single node is changing its length, there is a need to update all the childs node position,
+            // // this is what this .map is doing.
+            // root.descendants().map(x => {
+            //     if (x.children) {
+            //         if (side === 'right')
+            //             x.children.map(child => {
+            //                 child.y_start = child.y_start + x.abs_length
+            //                 child.y_end = child.y_end + x.abs_length
+            //             })
+
+            //         if (side === 'left')
+            //             x.children.map(child => {
+            //                 child.y_start = child.y_start - x.abs_length
+            //                 child.y_end = child.y_end - x.abs_length
+            //             })
+            //     }
+            // })
+
+            // // shift text to updated positions.
+            // side_container.selectAll("." + NODE_CLASS)
+            //     .data(root.descendants())
+            //     .join(enter => enter.append("circle"),
+            //         update =>
+            //             update.attr("transform", d => `translate(${d.y_start},${d.x})`)
+            //     )
+
+            // // internode links with updated positions
+            // side_container.append("g").attr("class", "link_container")
+            //     .attr("fill", "none")
+            //     .attr("stroke", stroke)
+            //     .attr("stroke-opacity", strokeOpacity)
+            //     .attr("stroke-linecap", null)
+            //     .attr("stroke-linejoin", null)
+            //     .attr("stroke-width", strokeWidth)
+            //     .selectAll(".link")
+            //     .data(root.links())
+            //     .join("path")
+            //     .attr("class", "link")
+            //     .attr("d", d3.linkHorizontal()
+            //         .source(d => ({ ...d.source, 'type': 'source' }))
+            //         .target(d => ({ ...d.target, 'type': 'target' }))
+            //         .x(d => d.type === 'source' ? d.y_end : d.y_start)
+            //         .y(d => d.x));
+
+            // //underlined text paths
+            // var text_underlined_path = root.descendants().map(x => ([[x.y_end, x.x], [x.y_start, x.x]]))
+
+            // side_container.append("g").attr("class", "underlined_path_container")
+            //     .attr("stroke", stroke)
+            //     .attr("stroke-opacity", strokeOpacity)
+            //     .attr("stroke-width", strokeWidth)
+            //     .selectAll(".link")
+            //     .data(text_underlined_path)
+            //     .join("path").attr("class", "link")
+            //     .attr("d", d3.line());
+
+            // var chart = svg.node();
+
+        }
+
+
+
+
+
+        let zoom = d3.zoom()
+            .on('zoom', handleZoom);
+
+        function handleZoom(e) {
+            d3.select('svg')
+                // .selectAll('g')
+                .selectAll('.global_tree_container')
+                // .selectAll('g')
+                .attr('transform', e.transform);
+        }
+
+        d3.select('svg')
+            .call(zoom);
+
+    </script>
+</body>
+
+</html>
