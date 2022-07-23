@@ -187,13 +187,8 @@
         var nodes = [...Array(30).keys()].map(x => ({ "x": 0 + d3.randomNormal(10, 0.15)(), "y": 0 + d3.randomNormal(10, 0.15)(), "r": 10, "name": ids[x] }))
 
         function ForceGraph(nodes) {
-
-            console.log(ids)
-
             const simulation = d3.forceSimulation()
                 .nodes(nodes)
-                // .force("charge", d3.forceManyBody().strength(0))
-                // .force("center", d3.forceCenter(0, 0).strength(0))
                 .force("collide", d3.forceCollide(41).strength(0.8))
                 .force("x", d3.forceX(0))
                 .force("y", d3.forceY(0))
@@ -201,9 +196,6 @@
 
             const svg = d3
                 .select("svg")
-                .attr("class", "onesvg")
-
-            const node = svg.append("g")
                 .on("click", function (d) {
                     console.log(d.srcElement.__data__);
                     yourGlobalVariable = d.srcElement.__data__.name
@@ -213,24 +205,65 @@
                     update(all, "up")
                     expandIt()
                 })
-                .attr("class", "force_node")
-                .attr("fill", "currentColor")
-                .attr("stroke", "#fff")
-                .attr("stroke-opacity", 1)
-                .attr("stroke-width", 1.5)
-                .selectAll("circle")
+                .attr("class", "onesvg")
+
+            const node = svg
+            // .append("g")
+            //     .on("click", function (d) {
+            //         console.log(d.srcElement.__data__);
+            //         yourGlobalVariable = d.srcElement.__data__.name
+            //         clickedItem = d.srcElement.__data__
+            //         var all = getDataInvolved(nodes)
+
+            //         update(all, "up")
+            //         expandIt()
+            //     })
+            //     .attr("class", "force_node")
+            //     .attr("fill", "currentColor")
+            //     .attr("stroke", "#fff")
+            //     .attr("stroke-opacity", 1)
+            //     .attr("stroke-width", 1.5)
+
+            
+            var node_containers = svg
+                .selectAll("g")
                 .data(nodes, function (d) { return d ? d.name : this.id; })
-                .join("circle")
+
+            var circles = node_containers
+                .enter()
+                .append("circle")
                 .attr("r", 10)
                 .attr('class', 'base_node')
 
+            var text = node_containers
+                .enter()
+                .append('text')
+                // .text("www")
+                .attr("text-anchor", d => "middle")
+                .attr("font-size", 15)
+                .attr("dy", d => d.x)
+                .attr("dx", (d,i) => {return d.x} )
+                .text((d, i) => { return d.name})
+
+    //             .attr("font-size", 15)
+    //             .attr("dy", function(d) {
+    //                 console.log(d)
+    //     return d.y;
+    //   })
+
+                // console.log('circles')
+                // console.log(circles)
+
             function ticked(i) {
-                node
+                circles
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
+
+                    text
+                    .attr("dx", d => d.x)
+                    .attr("dy", d => d.y)
             }
 
-            // return Object.assign(svg.node(), {});
         }
 
 
@@ -259,8 +292,8 @@
             }
 
             var a = d3
-                .select(".onesvg").select(".force_node")
-                .selectAll("circle")
+                .select(".onesvg").selectAll(".base_node")
+                // .selectAll("circle")
 
                 console.log('dom element circle')
                 console.log(a)
@@ -317,7 +350,7 @@
                             .on("tick.bar", ticked2)
 
             var d = d3
-                .select(".onesvg .force_node")
+                .select(".onesvg")
                 .selectAll("circle.new")
 
             function ticked(i) {
@@ -327,7 +360,7 @@
             }
 
             var d2 = d3
-                .select(".onesvg").select(".force_node")
+                .select(".onesvg")
                 .selectAll("circle.base_node")
 
             function ticked2(i) {
@@ -351,7 +384,7 @@
                             .on("end", ended)
                             
             var toShrink = d3
-                .select(".onesvg .force_node")
+                .select(".onesvg")
                 .selectAll("circle.new")
                 
 
@@ -363,7 +396,7 @@
             }
 
             var d2 = d3
-                .select(".onesvg").select(".force_node")
+                .select(".onesvg")
                 .selectAll("circle.base_node")
 
                 console.log('d2')
