@@ -170,10 +170,21 @@
         let ids = [...Array(30).keys()].map(x => (Math.random() + 1).toString(36))//.substring(4, Math.round(Math.random()*20,1)))
         var nodes = [...Array(30).keys()].map(x => ({ "x": 0 + d3.randomNormal(10, 0.15)(), "y": 0 + d3.randomNormal(10, 0.15)(), "r": 10, "name": ids[x] }))
 
+
+        console.log('nodes')
+        console.log(nodes)
+
+
         function ForceGraph(nodes) {
+
+            // const links_intro = data.links.map(d => Object.create(d));
+
+
             const simulation = d3.forceSimulation()
                 .nodes(nodes)
                 .force("collide", d3.forceCollide(30).radius(d=>{return 30}).strength(0.8))
+                // .force("link", d3.forceLink(links_intro).strength(1).distance(20).iterations(10))
+
                 .force("x", d3.forceX(0))
                 .force("y", d3.forceY(0))
                 .on("tick", ticked)
@@ -326,6 +337,12 @@
         }
 
         function shrinkIt(initialPosition) {
+
+            var paths = d3.select(".onesvg").selectAll(".underlined_path_container,.link_container")
+            paths.remove()
+
+            console.log('jjjj')
+            // console.log(a)
             var shrinkSimulation = d3.forceSimulation()
                             .force("x", d3.forceX().x(initialPosition.x))
                             .force("y", d3.forceY().y(initialPosition.y))
