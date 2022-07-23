@@ -3,10 +3,7 @@
 
 <head>
     <button onclick="ForceGraph(nodes)" type="button">Animation</button>
-    <button onclick="update(nodes)" type="button">transition</button>
-    <button onclick="gg()" type="button">gg</button>
     <button onclick="shrinkIt(clickedItem)" type="button">shrink it</button>
-    <!-- <button onclick="update(getDataInvolved(nodes), 'down')" type="button">update2</button> -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
@@ -153,14 +150,13 @@
 
         setBaseSVG()
 
-        drawTree(root_left, "left")
-        drawTree(root_right, "right")
+        var root_left = drawTree(root_left, "left")
+        var root_right = drawTree(root_right, "right")
 
-        function get_nodes_absolute_position() {
-            var individual_contrib = ['node_right', 'node_left'].map(side => d3.selectAll("." + side).nodes().map(node => ({ name: node.__data__.data.name, x: node.__data__.y, y: node.__data__.x, lastx: node.__data__.x, lasty: node.__data__.y })))
-            positions = { 'nodes': individual_contrib.flat(), 'links': [] }
-            return positions
-        }
+        var root_link = [...root_right.links(), ...root_left.links()]
+        var root_nodes = [...root_right.descendants(), ...root_left.descendants()]
+
+
 
         var yourGlobalVariable;
         var clickedItem;
@@ -177,7 +173,7 @@
         function ForceGraph(nodes) {
             const simulation = d3.forceSimulation()
                 .nodes(nodes)
-                .force("collide", d3.forceCollide(30).radius(d=>{console.log(d); return 30}).strength(0.8))
+                .force("collide", d3.forceCollide(30).radius(d=>{return 30}).strength(0.8))
                 .force("x", d3.forceX(0))
                 .force("y", d3.forceY(0))
                 .on("tick", ticked)
@@ -185,19 +181,18 @@
             const svg = d3
                 .select("svg")
                 .on("click", function (d) {
-                    console.log(d.srcElement.__data__);
                     yourGlobalVariable = d.srcElement.__data__.name
                     clickedItem = d.srcElement.__data__
                     var all = getDataInvolved(nodes)
 
-                    update(all, "up")
+                    update(all)
                     expandIt()
                 })
                 .attr("class", "onesvg")
 
             
             var node_containers = svg
-                .selectAll("g")
+                .selectAll("g.node_container2")
                 .data(nodes, function (d) { return d ? d.name : this.id; })
 
             var circles = node_containers
@@ -206,24 +201,13 @@
                 .attr("r", 10)
                 .attr('class', 'base_node')
 
-                var textWidth = []
-
             var text = node_containers
                 .enter()
                 .append('text')
                 .attr("text-anchor", d => "middle")
                 .attr("font-size", 15)
-                // .attr("y", d => d.x + 100)
-                // .attr("x", (d,i) => {return d.x} )
                 .text((d, i) => { return d.name})
-                .each(function(d,i) {
-                    var thisWidth = this.getComputedTextLength()
-                    textWidth.push(thisWidth)
-                    // d = {...d, ...{"fff": "gggg"}}
-                    //this.remove() // remove them just after displaying them
-                })
 
-                console.log(textWidth)
 
             function ticked(i) {
                 circles
@@ -239,39 +223,22 @@
 
         function getDataInvolved(nodes) {
             var data = nodes.filter(item => item.name != yourGlobalVariable)
+        
+            entryData = d3.select('.global_tree_container').selectAll('a').nodes()
+            .map(node => ({ x: clickedItem.x, y: clickedItem.y, r: 10, name: node.__data__.data.name, computed_x: node.__data__.y_start, computed_y: node.__data__.x }))
 
-            var positions = get_nodes_absolute_position()
-            entryData = [...Array(positions.nodes.length).keys()].map(x => ({ "x": clickedItem.x, "y": clickedItem.y, "r": 10, "name": positions.nodes[x].name, "lastx": positions.nodes[x].x, "lasty": positions.nodes[x].y }))
+            positions = { 'nodes': entryData, 'links': [] }
 
             all = data.concat(entryData)
             return all
         }
 
-        function update(nodes, direction, withTransition = false) {
+        function update(nodes) {
+            var a = d3.select(".onesvg").selectAll(".base_node")
 
-            console.log('nodes update function')
-            console.log(nodes)
-            if (direction == "up") {
-                opacity = 0.5
-                radius = 5
-            } else {
-                opacity = 1
-                radius = 10
-            }
-
-            var a = d3
-                .select(".onesvg").selectAll(".base_node")
-
-                console.log('dom element circle')
-                console.log(a)
-
-                a.data(
-                    nodes, function (d) { return d ? d.name : this.id; }
-                )
+                a.data(nodes, function (d) { return d ? d.name : this.id; })
                 .join(
                     enter => {
-                        console.log('enter')
-                        console.log(enter)
                         entered = enter
 
                         var op =  enter.append('circle')
@@ -281,12 +248,6 @@
                             .attr('stroke', 'black')
                             .attr('class', 'new')
 
-                            if (withTransition) {
-                                op = op.transition()
-                                .duration(1000)
-                                .attr('cx', d=> d.lastx)
-                                .attr('cy', d=> d.lasty)
-                            }
                             return op
                             
                     },
@@ -294,8 +255,6 @@
                         return update
                     },
                     exit => {
-                        console.log("exit")
-                        console.log(exit)
                         exit.remove()
                     }
                 )
@@ -303,12 +262,13 @@
 
         function expandIt() {
             expandSimulation = d3.forceSimulation()
-                            .force("x", d3.forceX().x(d=>d.lastx)) 
-                            .force("y", d3.forceY().y(d=>d.lasty))
+                            .force("x", d3.forceX().x(d=>d.computed_x)) 
+                            .force("y", d3.forceY().y(d=>d.computed_y))
                             .nodes(entryData)
-                            .alphaMin(0.1)
+                            .alphaMin(0.3)
                             .on("tick.foo", ticked)
                             .on("tick.bar", ticked2)
+                            .on("end", ended)
 
             var d = d3
                 .select(".onesvg")
@@ -318,6 +278,8 @@
                     d
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
+                    .style('opacity', 1 - 0.5 * (1 - expandSimulation.alpha()))
+                    .attr('r', 10 - 10 * (1 - expandSimulation.alpha()));
             }
 
             var d2 = d3
@@ -328,8 +290,37 @@
                     d2
                     .style('opacity', 1 - 0.5 * (1 - expandSimulation.alpha()))
                     .attr('r', 10 - 5 * (1 - expandSimulation.alpha()));
+            }
 
-                    console.log("1 - " + expandSimulation.alpha())
+            function ended() {
+                var node_to_path = d3.select(".onesvg").append("g").attr("class", "link_container")
+                .attr("fill", "none")
+                .attr("stroke", stroke)
+                .attr("stroke-opacity", strokeOpacity)
+                .attr("stroke-linecap", null)
+                .attr("stroke-linejoin", null)
+                .attr("stroke-width", strokeWidth)
+                .selectAll(".link")
+                .data(root_link)
+                .join("path")
+                .attr("class", "link")
+                .attr("d", d3.linkHorizontal()
+                .source(d => ({...d.source, 'type': 'source'}))
+                .target(d => ({...d.target, 'type': 'target'}))
+                .x(d => d.type === 'source'? d.y_end:d.y_start)
+                .y(d => d.x));
+
+                var text_underlined_path = root_nodes.map(x=>([[x.y_end,x.x], [x.y_start, x.x]]))
+
+                d3.select(".onesvg").append("g").attr("class", "underlined_path_container")
+                .attr("stroke", stroke)
+                .attr("stroke-opacity", strokeOpacity)
+                .attr("stroke-width", strokeWidth)
+                .selectAll(".link")
+                        .data(text_underlined_path)
+                        .join("path").attr("class", "link")
+                        .attr("d", d3.line());
+        
             }
 
         }
@@ -360,9 +351,6 @@
                 .select(".onesvg")
                 .selectAll("circle.base_node")
 
-                console.log('d2')
-                console.log(d2)
-
                 d2.data(nodes, function (d) { return d ? d.name : this.id; })
                 .enter().append('circle')
                 .attr("r", 10)
@@ -374,8 +362,6 @@
                     d2
                     .style('opacity', 0.5 + 0.5 * (1 - shrinkSimulation.alpha()))
                     .attr('r', 5 + 5 * (1 - shrinkSimulation.alpha()));
-
-                    console.log("2 - " + shrinkSimulation.alpha())
             }
 
             function ended(i) {
@@ -412,16 +398,65 @@
 
             const labels = root.descendants().map(d => d.data.name);
 
-            // const svg = getBaseSVG()
-
             var side_container = d3.select(".global_tree_container").append("g").attr("class", side + "_tree_container")
-            console.log(side_container)
 
-            const node = side_container.append("g").attr("class", "node_container")
+            var node_container = side_container.append("g").attr("class", "node_container")
                 .selectAll("." + NODE_CLASS)
                 .data(root.descendants())
                 .join("a")
                 .attr('class', NODE_CLASS)
+
+                // var text_length = []
+
+            // Add text to node_container
+            var node_text = node_container.append("text")
+                .attr("dy", "-0.2em")
+                .attr("opacity", 0)
+                .attr("text-anchor", d => SIDE_CONST_TEXT_ANCHOR)
+                .text((d, i) => labels[i])
+       
+            // compute text length.
+            var text_length = node_text.nodes().reduce((prev, cur) => ({...prev, [cur.__data__.data.name]: cur.getComputedTextLength() || 0}), {})
+
+            // set position y_start and y_end of each node.
+            root.descendants().map(item => {
+                item.y_start = item.y
+                item.y_end = item.y + SIDE_CONST * text_length[item.data.name]
+                item.abs_length = Math.abs(text_length[item.data.name])
+            })
+            
+            // if one single node is changing its length, there is a need to update all the childs node position,
+            // this is what this .map is doing.
+            root.descendants().map(x => {
+                    if (x.children) {
+                            if (side === 'right')
+                            x.children.map(child => {
+                                    child.y_start = child.y_start + x.abs_length
+                                    child.y_end = child.y_end + x.abs_length
+                            })
+
+                            if (side === 'left')
+                            x.children.map(child => {
+                                    child.y_start = child.y_start - x.abs_length
+                                    child.y_end = child.y_end - x.abs_length
+                            })
+            }
+            })
+
+            return root
+
+            // console.log('root.descendants()')
+            // console.log(root.descendants())
+            // // shift text to updated positions.
+            // side_container.selectAll("." + NODE_CLASS)
+            // .data(root.descendants())
+            // .join(enter => enter.append("circle"),
+            //         update => 
+            //         update.attr("transform", d => `translate(${d.y_start},${d.x})`)
+            // )
+
+            //var text_underlined_path = root.descendants().map(x=>([[x.y_end,x.x], [x.y_start, x.x]]))
+
 
         }
 

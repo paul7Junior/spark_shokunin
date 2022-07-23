@@ -204,14 +204,14 @@ function drawTree(root, side) {
                 if (x.children) {
                         if (side === 'right')
                         x.children.map(child => {
-                                child.y_start = child.y_start + x.abs_length
-                                child.y_end = child.y_end + x.abs_length
+                                child.y_start += x.abs_length
+                                child.y_end += x.abs_length
                         })
 
                         if (side === 'left')
                         x.children.map(child => {
-                                child.y_start = child.y_start - x.abs_length
-                                child.y_end = child.y_end - x.abs_length
+                                child.y_start -= x.abs_length
+                                child.y_end -= x.abs_length
                         })
         }
         })
