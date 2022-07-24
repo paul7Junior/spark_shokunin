@@ -290,7 +290,7 @@
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
                     .style('opacity', 1 - 0.5 * (1 - expandSimulation.alpha()))
-                    .attr('r', 10 - 10 * (1 - expandSimulation.alpha()));
+                    .attr('r', 10 - 14 * (1 - expandSimulation.alpha()));
             }
 
             var d2 = d3
@@ -304,6 +304,8 @@
             }
 
             function ended() {
+
+                // join links
                 var node_to_path = d3.select(".onesvg").append("g").attr("class", "link_container")
                 .attr("fill", "none")
                 .attr("stroke", stroke)
@@ -323,6 +325,7 @@
 
                 var text_underlined_path = root_nodes.map(x=>([[x.y_end,x.x], [x.y_start, x.x]]))
 
+                // join text_underlined_path
                 d3.select(".onesvg").append("g").attr("class", "underlined_path_container")
                 .attr("stroke", stroke)
                 .attr("stroke-opacity", strokeOpacity)
@@ -331,6 +334,17 @@
                         .data(text_underlined_path)
                         .join("path").attr("class", "link")
                         .attr("d", d3.line());
+
+                // join text right side TODO collapse both sides into one 
+                d3.select(".onesvg").append("g").attr("class", "node_text_container")
+                .selectAll(".node_text")
+                .data(root_nodes)
+                .join("a")
+                .append("text")
+                .attr("dy", "-0.2em")
+                .attr("text-anchor", d => {return d.side == "right" ? "start" : "end"})
+                .text((d, i) => d.data.name)
+                .attr("transform", d => `translate(${d.y_start},${d.x})`)
         
             }
 
@@ -459,6 +473,8 @@
                             })
             }
             })
+
+            root.descendants().map(item => item.side = side)
 
             return root
 
