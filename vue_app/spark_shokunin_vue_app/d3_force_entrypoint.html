@@ -111,7 +111,7 @@
         var padding = 50;
         var stroke = "#555"
         var strokeWidth = 1.5
-        var strokeOpacity = 0.4
+        var strokeOpacity = 1
         var halo = "#fff"
         var haloWidth = 3
         var fill = "#999"
@@ -138,16 +138,31 @@
         }
 
         function compute_position(root) {
+            console.log('root.leaves()')
+            console.log(root.leaves())
+
+            console.log(root)
+
             root.leaves().map((item, i) => { // initialize leaves positions
-                item.x = -100 + i * 15
+                item.x = i * 15
             })
 
             position_iter(root.leaves()) // recursivity
         }
 
+        function adjust_tree_x(root_left, root_right) {
+            var diff = root_left.x - root_right.x
+            if (diff != 0) 
+                root_right.descendants().map((item, i) => {
+                    item.x += diff
+                })
+        }
+
+
         compute_position(root_right)
         compute_position(root_left)
 
+        adjust_tree_x(root_left, root_right)
         setBaseSVG()
 
         var root_left = drawTree(root_left, "left")
@@ -203,7 +218,7 @@
 
             
             var node_containers = svg
-                .selectAll("g.node_container2")
+                .selectAll("g")
                 .data(nodes, function (d) { return d ? d.name : this.id; })
 
             var circles = node_containers
@@ -212,11 +227,13 @@
                 .attr("r", 10)
                 .attr('class', 'base_node')
 
-            var text = node_containers
-                .enter()
-                .append('text')
+            var text = d3.select(".onesvg").append("g").attr("class", "back_text_container")
+                .selectAll('.back_text')
+                .data(nodes, function (d) { return d ? d.name : this.id; })
+                .join('text')
                 .attr("text-anchor", d => "middle")
                 .attr("font-size", 15)
+                .attr("class", 'back_text')
                 .text((d, i) => { return d.name})
 
 
@@ -293,15 +310,24 @@
                     .attr('r', 10 - 14 * (1 - expandSimulation.alpha()));
             }
 
-            var d2 = d3
+            var back_node = d3
                 .select(".onesvg")
                 .selectAll("circle.base_node")
 
+            var back_text = d3.select(".onesvg .back_text_container")
+
             function ticked2(i) {
-                    d2
-                    .style('opacity', 1 - 0.5 * (1 - expandSimulation.alpha()))
+                    back_node
+                    .style('opacity', 1 - 1.1 * (1 - expandSimulation.alpha()))
                     .attr('r', 10 - 5 * (1 - expandSimulation.alpha()));
+
+                    back_text
+                    .style('opacity', 1 - 1.4 * (1 - expandSimulation.alpha()))
+
             }
+
+
+                
 
             function ended() {
 
@@ -336,7 +362,7 @@
                         .attr("d", d3.line());
 
                 // join text right side TODO collapse both sides into one 
-                d3.select(".onesvg").append("g").attr("class", "node_text_container")
+                d3.select(".onesvg").append("g").attr("class", "front_text_container")
                 .selectAll(".node_text")
                 .data(root_nodes)
                 .join("a")
@@ -347,16 +373,16 @@
                 .attr("transform", d => `translate(${d.y_start},${d.x})`)
         
             }
-
         }
 
         function shrinkIt(initialPosition) {
 
-            var paths = d3.select(".onesvg").selectAll(".underlined_path_container,.link_container")
-            paths.remove()
+            d3.select(".onesvg")
+            .selectAll(".underlined_path_container,.link_container,.front_text_container")
+            .remove()
 
-            console.log('jjjj')
-            // console.log(a)
+
+
             var shrinkSimulation = d3.forceSimulation()
                             .force("x", d3.forceX().x(initialPosition.x))
                             .force("y", d3.forceY().y(initialPosition.y))
@@ -389,15 +415,27 @@
                 .attr('cy', clickedItem.y)
                 .attr('class', 'base_node')
 
+
+            var back_text = d3.select(".onesvg .back_text_container")
+
             function ticked2(i) {
                     d2
                     .style('opacity', 0.5 + 0.5 * (1 - shrinkSimulation.alpha()))
                     .attr('r', 5 + 5 * (1 - shrinkSimulation.alpha()));
+
+                    back_text
+                .style('opacity', (1 - shrinkSimulation.alpha()))
             }
+
+
 
             function ended(i) {
                 console.log("ENDED")
                 toShrink.remove()
+
+                // back_text
+                // .style('opacity', (1 - shrinkSimulation.alpha()))
+
                 // d2.style('opacity', 1).attr('r', 10)
             }
         }
